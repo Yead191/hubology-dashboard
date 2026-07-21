@@ -1,0 +1,58 @@
+import { useMemo, useState } from "react";
+import { Outlet, useLocation } from "react-router-dom";
+import { Drawer } from "antd";
+import { Sidebar } from "./Sidebar";
+import { Topbar } from "./Topbar";
+
+const PAGE_META: { match: (path: string) => boolean; title: string; subtitle?: string }[] = [
+  { match: (p) => p === "/", title: "Overview", subtitle: "Everything happening across Hubology, at a glance" },
+  { match: (p) => p === "/services", title: "Services", subtitle: "Consulting packages shown in the services directory" },
+  { match: (p) => p === "/vendors/applications", title: "Vendor applications", subtitle: "Review, approve, or reject incoming expert applications" },
+  { match: (p) => p === "/vendors", title: "Vendors", subtitle: "All verified experts and their subscription status" },
+  { match: (p) => p === "/store", title: "Store", subtitle: "Digital products and office supplies catalog" },
+  { match: (p) => p === "/membership", title: "Membership plans", subtitle: "Tiered subscription plans available to members" },
+  { match: (p) => p === "/forum", title: "Forum moderation", subtitle: "Reported posts awaiting a moderation decision" },
+];
+
+export default function DashboardLayout() {
+  const location = useLocation();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  const meta = useMemo(() => {
+    return (
+      PAGE_META.find((m) => m.match(location.pathname)) ?? {
+        match: () => false,
+        title: "Hubology Admin",
+        subtitle: undefined,
+      }
+    );
+  }, [location.pathname]);
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-navy-900">
+      <aside className="hidden w-[252px] shrink-0 md:block">
+        <Sidebar />
+      </aside>
+
+      <Drawer
+        placement="left"
+        open={mobileNavOpen}
+        onClose={() => setMobileNavOpen(false)}
+        closable={false}
+        width={252}
+        styles={{ body: { padding: 0 }, content: { background: "transparent" } }}
+      >
+        <Sidebar mobile onNavigate={() => setMobileNavOpen(false)} />
+      </Drawer>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Topbar title={meta.title} subtitle={meta.subtitle} onOpenMobileNav={() => setMobileNavOpen(true)} />
+        <main className="flex-1 overflow-y-auto px-4 py-6 md:px-7 md:py-7">
+          <div className="mx-auto w-full max-w-[1400px]">
+            <Outlet />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

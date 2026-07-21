@@ -1,0 +1,57 @@
+import type { MembershipPlan } from "./types";
+
+export const INITIAL_MEMBERSHIP_PLANS: MembershipPlan[] = [
+  {
+    id: "starter",
+    name: "Starter",
+    tagline: "For founders just getting off the ground.",
+    priceMonthly: 19,
+    priceYearly: 15,
+    featured: false,
+    highlight: "",
+    features: [
+      "Access to community forum",
+      "Digital resource library",
+      "Monthly group Q&A",
+      "5% off store purchases",
+    ],
+    createdAt: "2026-01-10T09:00:00Z",
+    updatedAt: "2026-05-01T09:00:00Z",
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    tagline: "For teams ready to move faster.",
+    priceMonthly: 49,
+    priceYearly: 39,
+    featured: true,
+    highlight: "Most popular",
+    features: [
+      "Everything in Starter",
+      "Priority forum support from experts",
+      "1 private expert session / month",
+      "Member-only events & workshops",
+      "10% off all store services",
+    ],
+    createdAt: "2026-01-10T09:05:00Z",
+    updatedAt: "2026-06-18T10:30:00Z",
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    tagline: "For scaling teams that need dedicated support.",
+    priceMonthly: 149,
+    priceYearly: 119,
+    featured: false,
+    highlight: "Best value for teams",
+    features: [
+      "Everything in Pro",
+      "Dedicated account manager",
+      "Unlimited expert sessions",
+      "Custom onboarding for your team",
+      "20% off all store services",
+    ],
+    createdAt: "2026-01-10T09:10:00Z",
+    updatedAt: "2026-04-22T14:00:00Z",
+  },
+];
