@@ -8,6 +8,7 @@ const TONE_STYLES: Record<StatusTone, string> = {
   danger: "bg-danger/12 text-danger border-danger/25",
   info: "bg-info/12 text-info border-info/25",
   violet: "bg-violet-600/15 text-violet-glow border-violet-600/30",
+  gold: "bg-[#f5b544]/12 text-[#f5b544] border-[#f5b544]/30",
   neutral: "bg-white/[0.06] text-mist-400 border-white/10",
 };
 

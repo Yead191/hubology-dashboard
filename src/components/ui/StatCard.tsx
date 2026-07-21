@@ -12,13 +12,16 @@ export function StatCard({
   value: string | number;
   icon: ReactNode;
   trend?: { direction: "up" | "down"; label: string };
-  tone?: "violet" | "success" | "warning" | "info";
+  tone?: "violet" | "success" | "warning" | "info" | "danger" | "gold" | "neutral";
 }) {
   const iconWrap: Record<string, string> = {
     violet: "from-[#8131F0] to-[#4A1C8A]",
     success: "from-[#34d399] to-[#0f9b6e]",
     warning: "from-[#f5b544] to-[#c9800f]",
     info: "from-[#5cc8f5] to-[#1f7bb0]",
+    danger: "from-[#f2617a] to-[#b3273f]",
+    gold: "from-[#f5b544] to-[#c9800f]",
+    neutral: "from-[#313564] to-[#191d3f]",
   };
 
   return (

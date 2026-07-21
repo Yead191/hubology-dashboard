@@ -7,6 +7,10 @@ import {
   MessageOutlined,
   FileSearchOutlined,
   SolutionOutlined,
+  HeartOutlined,
+  PieChartOutlined,
+  CalendarOutlined,
+  DollarOutlined,
 } from "@ant-design/icons";
 import type { ComponentType } from "react";
 
@@ -30,6 +34,18 @@ export const NAV_ITEMS: NavItem[] = [
     children: [
       { key: "vendors-applications", label: "Applications", path: "/vendors/applications", icon: FileSearchOutlined, badgeKey: "pendingVendors" },
       { key: "vendors-all", label: "All vendors", path: "/vendors", icon: SolutionOutlined },
+    ],
+  },
+  {
+    key: "ifundayiti",
+    label: "IFundAyiti",
+    path: "/ifundayiti",
+    icon: HeartOutlined,
+    children: [
+      { key: "ifundayiti-overview", label: "Overview", path: "/ifundayiti", icon: PieChartOutlined },
+      { key: "ifundayiti-applications", label: "Applications", path: "/ifundayiti/applications", icon: FileSearchOutlined },
+      { key: "ifundayiti-periods", label: "Application Periods", path: "/ifundayiti/periods", icon: CalendarOutlined },
+      { key: "ifundayiti-donations", label: "Donations", path: "/ifundayiti/donations", icon: DollarOutlined },
     ],
   },
   { key: "store", label: "Store", path: "/store", icon: ShopOutlined },

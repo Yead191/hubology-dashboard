@@ -12,6 +12,10 @@ const PAGE_META: { match: (path: string) => boolean; title: string; subtitle?: s
   { match: (p) => p === "/store", title: "Store", subtitle: "Digital products and office supplies catalog" },
   { match: (p) => p === "/membership", title: "Membership plans", subtitle: "Tiered subscription plans available to members" },
   { match: (p) => p === "/forum", title: "Forum moderation", subtitle: "Reported posts awaiting a moderation decision" },
+  { match: (p) => p === "/ifundayiti", title: "IFundAyiti", subtitle: "Micro grant program overview and analytics" },
+  { match: (p) => p === "/ifundayiti/applications", title: "Applications", subtitle: "Manage every application through its full lifecycle" },
+  { match: (p) => p === "/ifundayiti/periods", title: "Application periods", subtitle: "Create and manage grant cycles" },
+  { match: (p) => p === "/ifundayiti/donations", title: "Donations", subtitle: "Monitor donations to the IFundAyiti Program Fund" },
 ];
 
 export default function DashboardLayout() {

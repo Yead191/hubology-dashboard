@@ -14,6 +14,10 @@ const VendorsPage = lazy(() => import("@/features/vendors/VendorsPage"));
 const StorePage = lazy(() => import("@/features/store/StorePage"));
 const MembershipPage = lazy(() => import("@/features/membership/MembershipPage"));
 const ForumModerationPage = lazy(() => import("@/features/forum/ForumModerationPage"));
+const IFundAyitiOverviewPage = lazy(() => import("@/features/ifundayiti/IFundAyitiOverviewPage"));
+const IFundAyitiApplicationsPage = lazy(() => import("@/features/ifundayiti/ApplicationsPage"));
+const IFundAyitiPeriodsPage = lazy(() => import("@/features/ifundayiti/ApplicationPeriodsPage"));
+const IFundAyitiDonationsPage = lazy(() => import("@/features/ifundayiti/DonationsPage"));
 
 export default function App() {
   return (
@@ -30,6 +34,10 @@ export default function App() {
             <Route path="store" element={<StorePage />} />
             <Route path="membership" element={<MembershipPage />} />
             <Route path="forum" element={<ForumModerationPage />} />
+            <Route path="ifundayiti" element={<IFundAyitiOverviewPage />} />
+            <Route path="ifundayiti/applications" element={<IFundAyitiApplicationsPage />} />
+            <Route path="ifundayiti/periods" element={<IFundAyitiPeriodsPage />} />
+            <Route path="ifundayiti/donations" element={<IFundAyitiDonationsPage />} />
           </Route>
         </Route>
 
