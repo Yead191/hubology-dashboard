@@ -7,13 +7,17 @@ import {
   MenuOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/features/auth/AuthContext";
+import { useAuth } from "@/features/auth/useAuth";
 import { useVendors } from "@/features/vendors/VendorsContext";
 import { useForum } from "@/features/forum/ForumContext";
 import { toast } from "sonner";
+import { useGetProfileQuery } from "@/redux/features/auth/authApi";
+import { getImageUrl } from "@/lib/getImageUrl";
 
 export function Topbar({ title, subtitle, onOpenMobileNav }: { title: string; subtitle?: string; onOpenMobileNav?: () => void }) {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
+  const { data: profile } = useGetProfileQuery({});
+  const user = profile?.data;
   const navigate = useNavigate();
   const { vendors } = useVendors();
   const { posts } = useForum();
@@ -77,7 +81,7 @@ export function Topbar({ title, subtitle, onOpenMobileNav }: { title: string; su
         <Input
           prefix={<SearchOutlined className="text-mist-600" />}
           placeholder="Search anything…"
-          className="!bg-navy-800/70"
+          className="bg-navy-800/70!"
         />
       </div>
 
@@ -95,7 +99,7 @@ export function Topbar({ title, subtitle, onOpenMobileNav }: { title: string; su
 
       <Dropdown menu={{ items: userMenuItems }} trigger={["click"]} placement="bottomRight">
         <button type="button" className="flex items-center gap-2 rounded-full pl-1 pr-2 hover:bg-white/5">
-          <Avatar src={user?.avatar} icon={<UserOutlined />} size={32} />
+          <Avatar src={getImageUrl(user?.image)} icon={<UserOutlined />} size={32} />
           <span className="hidden text-sm font-medium text-cloud-100 sm:inline">{user?.name}</span>
         </button>
       </Dropdown>

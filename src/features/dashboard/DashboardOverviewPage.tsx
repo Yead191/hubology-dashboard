@@ -11,7 +11,7 @@ import { Avatar, Button } from "antd";
 import { StatCard } from "@/components/ui/StatCard";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusTag } from "@/components/ui/StatusTag";
-import { useAuth } from "@/features/auth/AuthContext";
+import { useAuth } from "@/features/auth/useAuth";
 import { useServices } from "@/features/services/ServicesContext";
 import { useVendors } from "@/features/vendors/VendorsContext";
 import { useStore } from "@/features/store/StoreContext";
