@@ -27,17 +27,16 @@ export function Sidebar({ mobile, onNavigate }: { mobile?: boolean; onNavigate?:
 
   return (
     <div className={cn("flex h-full w-full flex-col bg-navy-850 border-r border-navy-700/60", mobile ? "" : "")}>
-      <div className="flex items-center gap-2.5 px-5 pb-2 pt-6">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#8131F0] to-[#4A1C8A] shadow-[0_6px_18px_-6px_rgba(129,49,240,0.75)]">
-          <span className="font-display text-sm font-bold text-white">H</span>
-        </div>
-        <div className="leading-tight">
-          <div className="font-display text-[15px] font-semibold text-cloud-100">Hubology</div>
-          <div className="text-[11px] text-mist-600">Admin workspace</div>
-        </div>
+      <div className="flex flex-col items-center gap-2.5 px-5 pb-2 pt-6">
+        <img
+          src="/logo-hubology.svg"
+          alt="Hubology"
+          className="h-8 w-auto shrink-0"
+        />
+        
       </div>
 
-      <nav className="mt-4 flex-1 space-y-5 overflow-y-auto px-3 pb-4">
+      <nav className="mt-4 flex-1 space-y-5 overflow-y-auto px-3 pb-4 pt-2">
         <NavGroup>
           {NAV_ITEMS.map((item) => (
             <div key={item.key}>

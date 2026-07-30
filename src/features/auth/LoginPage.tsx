@@ -1,5 +1,9 @@
 import { Button, Form, Input } from "antd";
-import { LockOutlined, MailOutlined, ArrowRightOutlined } from "@ant-design/icons";
+import {
+  LockOutlined,
+  MailOutlined,
+  ArrowRightOutlined,
+} from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { useLoginMutation } from "@/redux/features/auth/authApi";
@@ -14,9 +18,16 @@ interface LoginFormValues {
 /** Pull a human-readable message out of an RTK Query error. */
 function getErrorMessage(error: unknown): string {
   if (typeof error === "object" && error !== null) {
-    const err = error as { data?: { message?: string }; error?: string; message?: string };
+    const err = error as {
+      data?: { message?: string };
+      error?: string;
+      message?: string;
+    };
     return (
-      err.data?.message ?? err.message ?? err.error ?? "Those credentials don't match our records."
+      err.data?.message ??
+      err.message ??
+      err.error ??
+      "Those credentials don't match our records."
     );
   }
   return "Something went wrong. Please try again.";
@@ -33,24 +44,32 @@ export default function LoginPage() {
   const handleFinish = async (values: LoginFormValues) => {
     try {
       const res = await login(values).unwrap();
-      console.log(res)
       const token = res.data?.createToken ?? res.data?.createToken;
 
       if (!token) {
-        toast.error("Sign in failed", { description: "The server didn't return an access token." });
+        toast.error("Sign in failed", {
+          description: "The server didn't return an access token.",
+        });
         return;
       }
 
       dispatch(setCredentials({ user: res.data?.user ?? null, token }));
-      toast.success("Welcome back", { description: "You're signed in to Hubology admin." });
+      toast.success("Welcome back", {
+        description: "You're signed in to Hubology admin.",
+      });
       navigate(from, { replace: true });
     } catch (error) {
       toast.error("Sign in failed", { description: getErrorMessage(error) });
     }
   };
 
-  const fillDemo = (form: ReturnType<typeof Form.useForm<LoginFormValues>>[0]) => {
-    form.setFieldsValue({ email: "superadmin@gmail.com", password: "password@" });
+  const fillDemo = (
+    form: ReturnType<typeof Form.useForm<LoginFormValues>>[0],
+  ) => {
+    form.setFieldsValue({
+      email: "superadmin@gmail.com",
+      password: "password@",
+    });
   };
 
   const [form] = Form.useForm<LoginFormValues>();
@@ -73,15 +92,23 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-105">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-linear-to-br from-[#8131F0] to-[#4A1C8A] shadow-[0_8px_24px_-8px_rgba(129,49,240,0.7)]">
-            <span className="font-display text-lg font-bold text-white">H</span>
-          </div>
-          <h1 className="font-display text-2xl font-semibold text-cloud-100">Hubology Admin</h1>
-          <p className="mt-1 text-sm text-mist-400">Sign in to manage your workspace</p>
+          <img
+            src="/logo-hubology.svg"
+            alt="Hubology"
+            className="mb-4 h-14 w-auto"
+          />
+          <p className="mt-1 text-sm text-mist-400">
+            Sign in to manage your workspace
+          </p>
         </div>
 
         <div className="glass-panel px-7 py-8">
-          <Form form={form} layout="vertical" requiredMark={false} onFinish={handleFinish}>
+          <Form
+            form={form}
+            layout="vertical"
+            requiredMark={false}
+            onFinish={handleFinish}
+          >
             <Form.Item
               label={<span className="text-mist-400">Email address</span>}
               name="email"
@@ -119,7 +146,7 @@ export default function LoginPage() {
               loading={isLoading}
               className="btn-gradient mt-2! border-0!"
               icon={<ArrowRightOutlined />}
-              iconPlacement ="end"
+              iconPlacement="end"
             >
               Sign in
             </Button>
@@ -127,7 +154,8 @@ export default function LoginPage() {
 
           <div className="mt-5 flex items-center justify-between rounded-xl border border-navy-600/60 bg-navy-800/50 px-4 py-3 text-xs">
             <div className="text-mist-400">
-              Demo login: <span className="text-cloud-100">superadmin@gmail.com</span>
+              Demo login:{" "}
+              <span className="text-cloud-100">superadmin@gmail.com</span>
             </div>
             <button
               type="button"

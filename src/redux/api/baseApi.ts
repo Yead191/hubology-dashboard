@@ -25,6 +25,7 @@ export const baseApi = createApi({
   }),
   tagTypes: [
     "Profile",
+    "Dashboard",
     "Applications",
     "ApplicationPeriods",
     "Donations",

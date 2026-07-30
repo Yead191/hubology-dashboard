@@ -7,80 +7,117 @@ import {
   ArrowRightOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Avatar, Button } from "antd";
+import { Avatar, Button, Skeleton } from "antd";
 import { StatCard } from "@/components/ui/StatCard";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusTag } from "@/components/ui/StatusTag";
-import { useAuth } from "@/features/auth/useAuth";
-import { useServices } from "@/features/services/ServicesContext";
 import { useVendors } from "@/features/vendors/VendorsContext";
-import { useStore } from "@/features/store/StoreContext";
 import { useMembership } from "@/features/membership/MembershipContext";
 import { useForum } from "@/features/forum/ForumContext";
 import { formatDate } from "@/lib/utils";
+import { useGetProfileQuery } from "@/redux/features/auth/authApi";
+import { useGetDashboardOverviewQuery } from "@/redux/features/dashboard/dashboardApi";
 
 export default function DashboardOverviewPage() {
-  const { user } = useAuth();
+  const { data: profile } = useGetProfileQuery({});
+  const { data: dashboardRes, isLoading: isDashboardLoading } = useGetDashboardOverviewQuery();
   const navigate = useNavigate();
-  const { services } = useServices();
   const { vendors } = useVendors();
-  const { digitalProducts, officeSupplies } = useStore();
   const { plans } = useMembership();
   const { posts } = useForum();
 
+  const stats = dashboardRes?.data;
   const pendingVendors = vendors.filter((v) => v.status === "pending");
-  const approvedVendors = vendors.filter((v) => v.status === "approved");
   const reportedPosts = posts.filter((p) => p.status === "reported");
-  const totalProducts = digitalProducts.length + officeSupplies.length;
 
-  const firstName = user?.name.split(" ")[0] ?? "there";
+  const firstName = profile?.data?.name.split(" ")[0] ?? "there";
 
   return (
     <div>
       <div className="aurora-field glass-panel mb-6 flex flex-col justify-between gap-4 p-6 md:flex-row md:items-center">
         <div>
-          <h2 className="font-display text-xl font-semibold text-cloud-100">Welcome back, {firstName} 👋</h2>
+          <h2 className="font-display text-xl font-semibold text-cloud-100">
+            Welcome back, {firstName} 👋
+          </h2>
           <p className="mt-1 text-sm text-mist-400">
-            Here's what's happening across Hubology today, {formatDate(new Date())}.
+            Here's what's happening across Hubology today,{" "}
+            {formatDate(new Date())}.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button className="btn-gradient !border-0" onClick={() => navigate("/vendors/applications")}>
+          <Button
+            className="btn-gradient border-0!"
+            onClick={() => navigate("/vendors/applications")}
+          >
             Review applications
           </Button>
           <Button onClick={() => navigate("/forum")}>Moderate forum</Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Live services" value={services.length} icon={<AppstoreOutlined />} tone="violet" />
-        <StatCard
-          label="Approved vendors"
-          value={approvedVendors.length}
-          icon={<TeamOutlined />}
-          tone="success"
-          trend={pendingVendors.length ? { direction: "up", label: `${pendingVendors.length} pending` } : undefined}
-        />
-        <StatCard label="Store products" value={totalProducts} icon={<ShopOutlined />} tone="info" />
-        <StatCard
-          label="Reported posts"
-          value={reportedPosts.length}
-          icon={<FlagFilled />}
-          tone="warning"
-        />
-      </div>
+      {isDashboardLoading ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="glass-panel-flat p-5">
+              <Skeleton active paragraph={{ rows: 1 }} title={{ width: "40%" }} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard
+            label="Live services"
+            value={stats?.totalServices ?? 0}
+            icon={<AppstoreOutlined />}
+            tone="violet"
+          />
+          <StatCard
+            label="Approved vendors"
+            value={stats?.approvedVendors ?? 0}
+            icon={<TeamOutlined />}
+            tone="success"
+            trend={
+              stats?.pendingVendors
+                ? { direction: "up", label: `${stats.pendingVendors} pending` }
+                : undefined
+            }
+          />
+          <StatCard
+            label="Store products"
+            value={stats?.totalProducts ?? 0}
+            icon={<ShopOutlined />}
+            tone="info"
+          />
+          <StatCard
+            label="Reported posts"
+            value={stats?.reportedPost ?? 0}
+            icon={<FlagFilled />}
+            tone="warning"
+          />
+        </div>
+      )}
 
       <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-5">
         <GlassCard flat className="xl:col-span-3">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-display text-[15px] font-semibold text-cloud-100">Needs your attention</h3>
-            <Button type="text" size="small" icon={<ArrowRightOutlined />} iconPosition="end" onClick={() => navigate("/vendors/applications")}>
+            <h3 className="font-display text-[15px] font-semibold text-cloud-100">
+              Needs your attention
+            </h3>
+            <Button
+              type="text"
+              size="small"
+              icon={<ArrowRightOutlined />}
+              iconPosition="end"
+              onClick={() => navigate("/vendors/applications")}
+            >
               View all
             </Button>
           </div>
 
           {pendingVendors.length === 0 && reportedPosts.length === 0 ? (
-            <p className="py-8 text-center text-sm text-mist-600">You're all caught up — nothing pending review.</p>
+            <p className="py-8 text-center text-sm text-mist-600">
+              You're all caught up — nothing pending review.
+            </p>
           ) : (
             <div className="space-y-2.5">
               {pendingVendors.slice(0, 3).map((v) => (
@@ -92,8 +129,12 @@ export default function DashboardOverviewPage() {
                   <div className="flex items-center gap-3">
                     <Avatar src={v.profile} icon={<UserOutlined />} size={36} />
                     <div>
-                      <div className="text-sm font-medium text-cloud-100">{v.name}</div>
-                      <div className="text-xs text-mist-400">Vendor application · {v.role}</div>
+                      <div className="text-sm font-medium text-cloud-100">
+                        {v.name}
+                      </div>
+                      <div className="text-xs text-mist-400">
+                        Vendor application · {v.role}
+                      </div>
                     </div>
                   </div>
                   <StatusTag tone="warning">Pending</StatusTag>
@@ -106,9 +147,12 @@ export default function DashboardOverviewPage() {
                   className="surface-hover flex w-full items-center justify-between gap-3 rounded-xl border border-navy-700/60 bg-navy-800/40 p-3 text-left hover:border-violet-600/40"
                 >
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-medium text-cloud-100">{p.title}</div>
+                    <div className="truncate text-sm font-medium text-cloud-100">
+                      {p.title}
+                    </div>
                     <div className="text-xs text-mist-400">
-                      Forum post · {p.reports.length} report{p.reports.length !== 1 ? "s" : ""}
+                      Forum post · {p.reports.length} report
+                      {p.reports.length !== 1 ? "s" : ""}
                     </div>
                   </div>
                   <StatusTag tone="danger">Reported</StatusTag>
@@ -120,8 +164,16 @@ export default function DashboardOverviewPage() {
 
         <GlassCard flat className="xl:col-span-2">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-display text-[15px] font-semibold text-cloud-100">Membership plans</h3>
-            <Button type="text" size="small" icon={<ArrowRightOutlined />} iconPosition="end" onClick={() => navigate("/membership")}>
+            <h3 className="font-display text-[15px] font-semibold text-cloud-100">
+              Membership plans
+            </h3>
+            <Button
+              type="text"
+              size="small"
+              icon={<ArrowRightOutlined />}
+              iconPosition="end"
+              onClick={() => navigate("/membership")}
+            >
               Manage
             </Button>
           </div>
@@ -134,11 +186,15 @@ export default function DashboardOverviewPage() {
                 <div>
                   <div className="flex items-center gap-1.5 text-sm font-medium text-cloud-100">
                     {plan.name}
-                    {plan.featured && <StatusTag tone="violet">Featured</StatusTag>}
+                    {plan.featured && (
+                      <StatusTag tone="violet">Featured</StatusTag>
+                    )}
                   </div>
                   <div className="text-xs text-mist-400">{plan.tagline}</div>
                 </div>
-                <div className="font-display text-sm font-semibold text-cloud-100">${plan.priceMonthly}/mo</div>
+                <div className="font-display text-sm font-semibold text-cloud-100">
+                  ${plan.priceMonthly}/mo
+                </div>
               </div>
             ))}
           </div>
