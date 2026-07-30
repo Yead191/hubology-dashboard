@@ -103,9 +103,9 @@ export function OrderDetailModal({
             </p>
           </div>
 
-          <div className="rounded-2xl border border-[#f5b544]/25 bg-[#f5b544]/10 px-4 py-3 text-right">
+          <div className="rounded-2xl border border-warning/25 bg-warning/10 px-4 py-3 text-right">
             <div className="text-[11px] uppercase tracking-wide text-mist-500">Order total</div>
-            <div className="font-display text-2xl font-semibold text-[#f5b544]">
+            <div className="font-display text-2xl font-semibold text-warning">
               {formatCurrency(breakdown.total_price)}
             </div>
           </div>
@@ -185,7 +185,7 @@ export function OrderDetailModal({
                     size="small"
                     icon={copied ? <CheckOutlined className="text-success" /> : <CopyOutlined />}
                     onClick={copyPaymentIntent}
-                    className="!text-mist-400 hover:!text-violet-glow"
+                    className="text-mist-400! hover:text-violet-glow!"
                   />
                 </Tooltip>
               </div>
@@ -236,7 +236,7 @@ export function OrderDetailModal({
             )}
             <div className="flex items-center justify-between border-t border-navy-700/60 bg-navy-900/40 px-4 py-3.5">
               <span className="text-sm font-medium text-cloud-100">Total</span>
-              <span className="font-display text-lg font-semibold text-[#f5b544]">
+              <span className="font-display text-lg font-semibold text-warning">
                 {formatCurrency(breakdown.total_price)}
               </span>
             </div>

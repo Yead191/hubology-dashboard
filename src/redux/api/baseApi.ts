@@ -36,6 +36,7 @@ export const baseApi = createApi({
     "Store",
     "Orders",
     "Membership",
+    "Transactions",
     "Forum",
   ],
   endpoints: () => ({}),

@@ -16,7 +16,9 @@ const StorePage = lazy(() => import("@/features/store/StorePage"));
 const OrdersPage = lazy(() => import("@/features/orders/OrdersPage"));
 const MembershipPage = lazy(() => import("@/features/membership/MembershipPage"));
 const MembershipSubscribersPage = lazy(() => import("@/features/membership/MembershipSubscribersPage"));
+const TransactionsPage = lazy(() => import("@/features/transactions/TransactionsPage"));
 const ForumModerationPage = lazy(() => import("@/features/forum/ForumModerationPage"));
+const ForumPostDetailPage = lazy(() => import("@/features/forum/ForumPostDetailPage"));
 const IFundAyitiOverviewPage = lazy(() => import("@/features/ifundayiti/IFundAyitiOverviewPage"));
 const IFundAyitiApplicationsPage = lazy(() => import("@/features/ifundayiti/ApplicationsPage"));
 const IFundAyitiPeriodsPage = lazy(() => import("@/features/ifundayiti/ApplicationPeriodsPage"));
@@ -39,7 +41,9 @@ export default function App() {
             <Route path="store/orders" element={<OrdersPage />} />
             <Route path="membership" element={<MembershipPage />} />
             <Route path="membership/:membershipId/subscribers" element={<MembershipSubscribersPage />} />
+            <Route path="transactions" element={<TransactionsPage />} />
             <Route path="forum" element={<ForumModerationPage />} />
+            <Route path="forum/:postId" element={<ForumPostDetailPage />} />
             <Route path="ifundayiti" element={<IFundAyitiOverviewPage />} />
             <Route path="ifundayiti/applications" element={<IFundAyitiApplicationsPage />} />
             <Route path="ifundayiti/periods" element={<IFundAyitiPeriodsPage />} />

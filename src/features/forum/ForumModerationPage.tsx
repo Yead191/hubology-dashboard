@@ -1,86 +1,134 @@
-import { useMemo, useState } from "react";
-import { Avatar, Button, Segmented, Table, type TableProps } from "antd";
-import { UserOutlined, EyeOutlined, FlagFilled } from "@ant-design/icons";
-import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Avatar, Badge, Button, Table, Tabs, type TableProps } from "antd";
+import {
+  EyeOutlined,
+  FlagFilled,
+  MessageOutlined,
+  HeartOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { PageToolbar } from "@/components/ui/PageToolbar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusTag } from "@/components/ui/StatusTag";
-import { formatDate } from "@/lib/utils";
-import { useForum } from "./ForumContext";
-import { ReportedPostDrawer } from "./components/ReportedPostDrawer";
-import type { ForumPost, PostStatus } from "./types";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
+import { cn, formatDate } from "@/lib/utils";
+import { getImageUrl } from "@/lib/getImageUrl";
+import { useGetPostsQuery } from "@/redux/features/forum/forumApi";
+import {
+  POST_STATUS_OPTIONS,
+  type ApiPost,
+  type PostStatus,
+} from "@/redux/features/forum/forum.types";
+import {
+  postStatusDotClassMap,
+  postStatusLabelMap,
+  postStatusToneMap,
+} from "./statusMaps";
 
-type FilterValue = PostStatus | "all";
+type StatusTab = PostStatus | "all";
 
-const STATUS_TONE = { published: "success", reported: "warning", removed: "danger" } as const;
-const STATUS_LABEL = { published: "Published", reported: "Reported", removed: "Removed" } as const;
+function useStatusCount(status?: PostStatus) {
+  const { data } = useGetPostsQuery({ page: 1, limit: 1, status });
+  return data?.pagination?.total ?? 0;
+}
 
 export default function ForumModerationPage() {
-  const { posts, dismissReport, removePost, restorePost, deletePostPermanently } = useForum();
-  const [filter, setFilter] = useState<FilterValue>("reported");
-  const [viewing, setViewing] = useState<ForumPost | null>(null);
+  const navigate = useNavigate();
+  const { value: search, setValue: setSearch, debouncedValue: searchTerm } = useDebouncedSearch();
+  const [statusTab, setStatusTab] = useState<StatusTab>("reported");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
 
-  const filtered = useMemo(() => {
-    const list = filter === "all" ? posts : posts.filter((p) => p.status === filter);
-    return [...list].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [posts, filter]);
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, statusTab]);
 
-  const reportedCount = posts.filter((p) => p.status === "reported").length;
-  const currentViewing = viewing ? posts.find((p) => p.id === viewing.id) ?? null : null;
+  const allCount = useStatusCount();
+  const reportedCount = useStatusCount("reported");
+  const publishedCount = useStatusCount("published");
+  const removedCount = useStatusCount("removed");
 
-  const handleDismiss = (post: ForumPost) => {
-    dismissReport(post.id);
-    toast.success("Report dismissed", { description: `"${post.title}" stays live on the forum.` });
-    setViewing(null);
+  const tabCounts: Record<StatusTab, number> = {
+    all: allCount,
+    reported: reportedCount,
+    published: publishedCount,
+    removed: removedCount,
   };
 
-  const handleRemove = (post: ForumPost) => {
-    removePost(post.id);
-    toast.message("Post removed", { description: `"${post.title}" was taken down from the forum.` });
-    setViewing(null);
-  };
+  const { data, isFetching } = useGetPostsQuery({
+    page,
+    limit,
+    searchTerm,
+    status: statusTab === "all" ? undefined : statusTab,
+  });
 
-  const handleRestore = (post: ForumPost) => {
-    restorePost(post.id);
-    toast.success("Post restored", { description: `"${post.title}" is live again.` });
-    setViewing(null);
-  };
+  const posts = data?.data ?? [];
+  const pagination = data?.pagination;
 
-  const handleDeletePermanently = (post: ForumPost) => {
-    deletePostPermanently(post.id);
-    toast.success("Post deleted", { description: `The post record has been permanently removed.` });
-    setViewing(null);
-  };
-
-  const columns: TableProps<ForumPost>["columns"] = [
+  const columns: TableProps<ApiPost>["columns"] = [
     {
       title: "Post",
-      key: "title",
+      key: "content",
       render: (_, record) => (
-        <div className="flex items-center gap-3">
-          <Avatar src={record.authorAvatar} icon={<UserOutlined />} size={38} />
+        <button
+          type="button"
+          className="group flex max-w-xl items-start gap-3 text-left"
+          onClick={() => navigate(`/forum/${record._id}`)}
+        >
+          <Avatar
+            src={getImageUrl(record?.author?.image ||"")}
+            icon={<UserOutlined />}
+            size={40}
+            className="mt-0.5 shrink-0 bg-violet-600/25! text-violet-glow!"
+          />
           <div className="min-w-0">
-            <div className="max-w-[320px] truncate font-medium text-cloud-100">{record.title}</div>
-            <div className="text-xs text-mist-400">{record.authorName}</div>
+            <div className="line-clamp-2 text-sm font-medium leading-snug text-cloud-100 transition group-hover:text-violet-glow">
+              {record.content}
+            </div>
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-mist-400">
+              <span>{record?.author?.name || "Unknown"}</span>
+              {record?.author?.role && (
+                <>
+                  <span className="text-mist-700">·</span>
+                  <span className="uppercase tracking-wide text-mist-500">{record.author.role}</span>
+                </>
+              )}
+            </div>
           </div>
-        </div>
+        </button>
       ),
     },
     {
       title: "Category",
-      dataIndex: "category",
       key: "category",
       responsive: ["md"],
-      render: (category: string) => <StatusTag tone="violet">{category}</StatusTag>,
+      render: (_, record) => <StatusTag tone="violet">{record.category}</StatusTag>,
+    },
+    {
+      title: "Engagement",
+      key: "engagement",
+      responsive: ["lg"],
+      render: (_, record) => (
+        <div className="flex items-center gap-3 text-xs text-mist-400">
+          <span className="inline-flex items-center gap-1">
+            <HeartOutlined /> {record.totalLikes}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <MessageOutlined /> {record.totalComments}
+          </span>
+        </div>
+      ),
     },
     {
       title: "Reports",
       key: "reports",
       render: (_, record) =>
-        record.reports.length > 0 ? (
-          <span className="inline-flex items-center gap-1 text-danger">
-            <FlagFilled className="text-[11px]" /> {record.reports.length}
+        (record.reportCount ?? 0) > 0 ? (
+          <span className="inline-flex items-center gap-1.5 font-medium text-danger">
+            <FlagFilled className="text-[11px]" />
+            {record.reportCount}
           </span>
         ) : (
           <span className="text-mist-600">—</span>
@@ -88,65 +136,147 @@ export default function ForumModerationPage() {
     },
     {
       title: "Posted",
-      dataIndex: "createdAt",
       key: "createdAt",
-      responsive: ["lg"],
-      render: (value: string) => <span className="text-mist-400">{formatDate(value)}</span>,
+      responsive: ["xl"],
+      render: (_, record) => <span className="text-mist-400">{formatDate(record?.createdAt || "")}</span>,
     },
     {
       title: "Status",
-      dataIndex: "status",
       key: "status",
-      render: (status: PostStatus) => <StatusTag tone={STATUS_TONE[status]}>{STATUS_LABEL[status]}</StatusTag>,
+      render: (_, record) => (
+        <StatusTag tone={postStatusToneMap[record.status]}>
+          {postStatusLabelMap[record.status]}
+        </StatusTag>
+      ),
     },
     {
       title: "",
       key: "actions",
-      width: 100,
+      width: 108,
       render: (_, record) => (
-        <Button size="small" icon={<EyeOutlined />} onClick={() => setViewing(record)}>
+        <Button
+          type="text"
+          className="!text-mist-400 hover:!bg-violet-600/15 hover:!text-violet-glow"
+          icon={<EyeOutlined />}
+          onClick={() => navigate(`/forum/${record._id}`)}
+        >
           Review
         </Button>
       ),
     },
   ];
 
+  const tabItems = [
+    { key: "all" as const, label: "All", count: tabCounts.all },
+    ...POST_STATUS_OPTIONS.map((status) => ({
+      key: status,
+      label: postStatusLabelMap[status],
+      count: tabCounts[status],
+    })),
+  ];
+
   return (
     <div>
-      <PageToolbar eyebrow="Forum moderation" count={filtered.length}>
-        <Segmented
-          value={filter}
-          onChange={(v) => setFilter(v as FilterValue)}
-          options={[
-            { label: `Reported (${reportedCount})`, value: "reported" },
-            { label: "Published", value: "published" },
-            { label: "Removed", value: "removed" },
-            { label: "All", value: "all" },
-          ]}
-        />
-      </PageToolbar>
+      <div className="aurora-field glass-panel mb-6 overflow-hidden p-6 md:p-7">
+        <div className="relative flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div className="pointer-events-none absolute -right-8 -top-16 h-44 w-44 rounded-full bg-warning/15 blur-[60px]" />
+          <div className="pointer-events-none absolute -bottom-20 left-1/3 h-36 w-36 rounded-full bg-violet-600/20 blur-[50px]" />
 
-      <GlassCard flat padded={false}>
-        {filtered.length === 0 ? (
-          <EmptyState
-            icon={<FlagFilled />}
-            title="Nothing here"
-            description="Posts reported by the community will show up in this queue for review."
+          <div className="relative flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#8131F0] to-[#4A1C8A] shadow-[0_8px_24px_-8px_rgba(129,49,240,0.65)]">
+              <FlagFilled className="text-lg text-white" />
+            </div>
+            <div>
+              <h2 className="font-display text-xl font-semibold text-cloud-100">Forum moderation</h2>
+              <p className="mt-1 max-w-xl text-sm text-mist-400">
+                Monitor community posts, review reports, and keep the conversation healthy.
+              </p>
+            </div>
+          </div>
+
+          {reportedCount > 0 && (
+            <div className="relative rounded-2xl border border-warning/25 bg-warning/10 px-4 py-3 text-sm">
+              <div className="font-semibold text-warning">{reportedCount} reported</div>
+              <div className="text-xs text-mist-400">Awaiting review</div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <GlassCard flat className="mb-4" padded={false}>
+        <div className="px-4 pt-2 md:px-5">
+          <Tabs
+            activeKey={statusTab}
+            onChange={(key) => setStatusTab(key as StatusTab)}
+            items={tabItems.map((tab) => ({
+              key: tab.key,
+              label: (
+                <span className="flex items-center gap-2">
+                  {tab.key !== "all" && (
+                    <span
+                      className={cn(
+                        "h-2 w-2 rounded-full",
+                        postStatusDotClassMap[tab.key as PostStatus]
+                      )}
+                    />
+                  )}
+                  {tab.label}
+                  <Badge
+                    count={tab.count}
+                    showZero
+                    overflowCount={999}
+                    style={{
+                      backgroundColor: statusTab === tab.key ? "#8131F0" : "#23274f",
+                      color: statusTab === tab.key ? "#fff" : "#9ca3c9",
+                      boxShadow: "none",
+                    }}
+                  />
+                </span>
+              ),
+            }))}
           />
-        ) : (
-          <Table rowKey="id" columns={columns} dataSource={filtered} pagination={{ pageSize: 8, hideOnSinglePage: true }} />
-        )}
+        </div>
+
+        <div className="flex flex-col gap-2.5 border-t border-navy-700/60 p-4 sm:flex-row sm:items-center md:px-5">
+          <SearchInput
+            placeholder="Search posts by content or author…"
+            value={search}
+            onChange={setSearch}
+            className="sm:w-80!"
+          />
+          <div className="text-xs text-mist-600 sm:ml-auto">
+            {pagination?.total ?? 0} post{(pagination?.total ?? 0) === 1 ? "" : "s"}
+          </div>
+        </div>
       </GlassCard>
 
-      <ReportedPostDrawer
-        post={currentViewing}
-        open={!!viewing}
-        onClose={() => setViewing(null)}
-        onDismissReport={handleDismiss}
-        onRemovePost={handleRemove}
-        onRestorePost={handleRestore}
-        onDeletePermanently={handleDeletePermanently}
-      />
+      <GlassCard flat padded={false}>
+        {!isFetching && posts.length === 0 ? (
+          <EmptyState
+            icon={<FlagFilled />}
+            title="No posts in this view"
+            description="Try another status tab or clear your search."
+          />
+        ) : (
+          <Table
+            rowKey="_id"
+            columns={columns}
+            dataSource={posts}
+            loading={isFetching}
+            pagination={{
+              current: pagination?.page ?? page,
+              pageSize: pagination?.limit ?? limit,
+              total: pagination?.total ?? 0,
+              showSizeChanger: true,
+              showTotal: (total) => `${total} posts`,
+              onChange: (nextPage, nextPageSize) => {
+                setPage(nextPage);
+                setLimit(nextPageSize);
+              },
+            }}
+          />
+        )}
+      </GlassCard>
     </div>
   );
 }

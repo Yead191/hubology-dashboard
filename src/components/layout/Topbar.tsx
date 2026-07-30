@@ -8,22 +8,22 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/useAuth";
-import { useForum } from "@/features/forum/ForumContext";
 import { toast } from "sonner";
 import { useGetProfileQuery } from "@/redux/features/auth/authApi";
 import { useGetDashboardOverviewQuery } from "@/redux/features/dashboard/dashboardApi";
+import { useGetPostsQuery } from "@/redux/features/forum/forumApi";
 import { getImageUrl } from "@/lib/getImageUrl";
 
 export function Topbar({ title, subtitle, onOpenMobileNav }: { title: string; subtitle?: string; onOpenMobileNav?: () => void }) {
   const { logout } = useAuth();
   const { data: profile } = useGetProfileQuery({});
   const { data: dashboardRes } = useGetDashboardOverviewQuery();
+  const { data: reportedRes } = useGetPostsQuery({ status: "reported", page: 1, limit: 1 });
   const user = profile?.data;
   const navigate = useNavigate();
-  const { posts } = useForum();
 
   const pendingVendors = dashboardRes?.data?.pendingVendors ?? 0;
-  const reportedPosts = posts.filter((p) => p.status === "reported").length;
+  const reportedPosts = reportedRes?.pagination?.total ?? 0;
   const alertCount = pendingVendors + reportedPosts;
 
   const handleLogout = () => {

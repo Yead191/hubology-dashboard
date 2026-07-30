@@ -5,6 +5,7 @@ import {
   ShopOutlined,
   ShoppingOutlined,
   CrownOutlined,
+  HistoryOutlined,
   MessageOutlined,
   FileSearchOutlined,
   HeartOutlined,
@@ -98,6 +99,12 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Membership",
     path: "/membership",
     icon: CrownOutlined,
+  },
+  {
+    key: "transactions",
+    label: "Transactions",
+    path: "/transactions",
+    icon: HistoryOutlined,
   },
   {
     key: "forum",

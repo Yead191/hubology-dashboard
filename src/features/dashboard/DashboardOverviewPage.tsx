@@ -11,13 +11,14 @@ import { Avatar, Button, Skeleton } from "antd";
 import { StatCard } from "@/components/ui/StatCard";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusTag } from "@/components/ui/StatusTag";
-import { useForum } from "@/features/forum/ForumContext";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { toFileUrl } from "@/config";
 import { useGetProfileQuery } from "@/redux/features/auth/authApi";
 import { useGetDashboardOverviewQuery } from "@/redux/features/dashboard/dashboardApi";
 import { useGetVendorsQuery } from "@/redux/features/vendors/vendorsApi";
 import { useGetMembershipsQuery } from "@/redux/features/membership/membershipApi";
+import { useGetPostsQuery } from "@/redux/features/forum/forumApi";
+import { getImageUrl } from "@/lib/getImageUrl";
 
 export default function DashboardOverviewPage() {
   const { data: profile } = useGetProfileQuery({});
@@ -29,13 +30,13 @@ export default function DashboardOverviewPage() {
     type: "user",
     recurring: "month",
   });
+  const { data: reportedRes } = useGetPostsQuery({ status: "reported", page: 1, limit: 3 });
   const navigate = useNavigate();
-  const { posts } = useForum();
 
   const stats = dashboardRes?.data;
   const pendingVendors = pendingVendorsRes?.data ?? [];
   const plans = membershipRes?.data ?? [];
-  const reportedPosts = posts.filter((p) => p.status === "reported");
+  const reportedPosts = reportedRes?.data ?? [];
 
   const firstName = profile?.data?.name.split(" ")[0] ?? "there";
 
@@ -142,15 +143,23 @@ export default function DashboardOverviewPage() {
               ))}
               {reportedPosts.slice(0, 3).map((p) => (
                 <button
-                  key={p.id}
+                  key={p._id}
                   type="button"
-                  onClick={() => navigate("/forum")}
+                  onClick={() => navigate(`/forum/${p._id}`)}
                   className="surface-hover flex w-full items-center justify-between gap-3 rounded-xl border border-navy-700/60 bg-navy-800/40 p-3 text-left hover:border-violet-600/40"
                 >
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-medium text-cloud-100">{p.title}</div>
-                    <div className="text-xs text-mist-400">
-                      Forum post · {p.reports.length} report{p.reports.length !== 1 ? "s" : ""}
+                  <div className="flex min-w-0 items-center gap-3">
+                    <Avatar
+                      src={getImageUrl(p.author.image)}
+                      icon={<UserOutlined />}
+                      size={36}
+                      className="bg-warning/15! text-warning!"
+                    />
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium text-cloud-100">{p.content}</div>
+                      <div className="text-xs text-mist-400">
+                        Forum post · {p.reportCount ?? 0} report{(p.reportCount ?? 0) !== 1 ? "s" : ""}
+                      </div>
                     </div>
                   </div>
                   <StatusTag tone="danger">Reported</StatusTag>
