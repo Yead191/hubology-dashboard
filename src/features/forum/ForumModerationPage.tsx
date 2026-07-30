@@ -156,7 +156,7 @@ export default function ForumModerationPage() {
       render: (_, record) => (
         <Button
           type="text"
-          className="!text-mist-400 hover:!bg-violet-600/15 hover:!text-violet-glow"
+          className="text-mist-400! hover:bg-violet-600/15! hover:text-violet-glow!"
           icon={<EyeOutlined />}
           onClick={() => navigate(`/forum/${record._id}`)}
         >
@@ -183,7 +183,7 @@ export default function ForumModerationPage() {
           <div className="pointer-events-none absolute -bottom-20 left-1/3 h-36 w-36 rounded-full bg-violet-600/20 blur-[50px]" />
 
           <div className="relative flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#8131F0] to-[#4A1C8A] shadow-[0_8px_24px_-8px_rgba(129,49,240,0.65)]">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-[#8131F0] to-[#4A1C8A] shadow-[0_8px_24px_-8px_rgba(129,49,240,0.65)]">
               <FlagFilled className="text-lg text-white" />
             </div>
             <div>
