@@ -8,21 +8,21 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/useAuth";
-import { useVendors } from "@/features/vendors/VendorsContext";
 import { useForum } from "@/features/forum/ForumContext";
 import { toast } from "sonner";
 import { useGetProfileQuery } from "@/redux/features/auth/authApi";
+import { useGetDashboardOverviewQuery } from "@/redux/features/dashboard/dashboardApi";
 import { getImageUrl } from "@/lib/getImageUrl";
 
 export function Topbar({ title, subtitle, onOpenMobileNav }: { title: string; subtitle?: string; onOpenMobileNav?: () => void }) {
   const { logout } = useAuth();
   const { data: profile } = useGetProfileQuery({});
+  const { data: dashboardRes } = useGetDashboardOverviewQuery();
   const user = profile?.data;
   const navigate = useNavigate();
-  const { vendors } = useVendors();
   const { posts } = useForum();
 
-  const pendingVendors = vendors.filter((v) => v.status === "pending").length;
+  const pendingVendors = dashboardRes?.data?.pendingVendors ?? 0;
   const reportedPosts = posts.filter((p) => p.status === "reported").length;
   const alertCount = pendingVendors + reportedPosts;
 
@@ -47,7 +47,7 @@ export function Topbar({ title, subtitle, onOpenMobileNav }: { title: string; su
           <span className="font-semibold text-cloud-100">{pendingVendors}</span>
         </div>
       ),
-      onClick: () => navigate("/vendors/applications"),
+      onClick: () => navigate("/vendors"),
     },
     {
       key: "forum",

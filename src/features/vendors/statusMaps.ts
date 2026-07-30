@@ -1,28 +1,30 @@
 import type { StatusTone } from "@/types/common";
-import type { VendorStatus, SubscriptionStatus } from "./types";
+import type { VendorAccountStatus } from "@/redux/features/vendors/vendors.types";
 
-export const statusToneMap: Record<VendorStatus, StatusTone> = {
+export const statusToneMap: Record<VendorAccountStatus, StatusTone> = {
   pending: "warning",
-  approved: "success",
-  rejected: "danger",
+  active: "success",
+  blocked: "danger",
+  rejected: "neutral",
 };
 
-export const statusLabelMap: Record<VendorStatus, string> = {
-  pending: "Pending review",
-  approved: "Approved",
+export const statusLabelMap: Record<VendorAccountStatus, string> = {
+  pending: "Pending application",
+  active: "Active",
+  blocked: "Blocked",
   rejected: "Rejected",
 };
 
-export const subscriptionToneMap: Record<SubscriptionStatus, StatusTone> = {
-  not_subscribed: "neutral",
-  active: "info",
-  expired: "warning",
-  cancelled: "danger",
+export const statusSelectClassMap: Record<VendorAccountStatus, string> = {
+  pending: "!border-warning/45 !bg-warning/12 [&_.ant-select-selection-item]:!text-warning",
+  active: "!border-success/45 !bg-success/12 [&_.ant-select-selection-item]:!text-success",
+  blocked: "!border-danger/45 !bg-danger/12 [&_.ant-select-selection-item]:!text-danger",
+  rejected: "!border-white/15 !bg-white/[0.06] [&_.ant-select-selection-item]:!text-mist-400",
 };
 
-export const subscriptionLabelMap: Record<SubscriptionStatus, string> = {
-  not_subscribed: "Not subscribed",
-  active: "Package active",
-  expired: "Package expired",
-  cancelled: "Package cancelled",
+export const statusDotClassMap: Record<VendorAccountStatus, string> = {
+  pending: "bg-warning",
+  active: "bg-success",
+  blocked: "bg-danger",
+  rejected: "bg-mist-600",
 };

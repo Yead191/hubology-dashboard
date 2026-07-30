@@ -6,7 +6,6 @@ import {
   CrownOutlined,
   MessageOutlined,
   FileSearchOutlined,
-  SolutionOutlined,
   HeartOutlined,
   PieChartOutlined,
   CalendarOutlined,
@@ -42,10 +41,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Vendors",
     path: "/vendors",
     icon: TeamOutlined,
-    children: [
-      { key: "vendors-applications", label: "Applications", path: "/vendors/applications", icon: FileSearchOutlined, badgeKey: "pendingVendors" },
-      { key: "vendors-all", label: "All vendors", path: "/vendors", icon: SolutionOutlined },
-    ],
+    badgeKey: "pendingVendors",
   },
   {
     key: "ifundayiti",

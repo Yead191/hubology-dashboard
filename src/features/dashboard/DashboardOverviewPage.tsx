@@ -11,23 +11,24 @@ import { Avatar, Button, Skeleton } from "antd";
 import { StatCard } from "@/components/ui/StatCard";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusTag } from "@/components/ui/StatusTag";
-import { useVendors } from "@/features/vendors/VendorsContext";
 import { useMembership } from "@/features/membership/MembershipContext";
 import { useForum } from "@/features/forum/ForumContext";
 import { formatDate } from "@/lib/utils";
+import { toFileUrl } from "@/config";
 import { useGetProfileQuery } from "@/redux/features/auth/authApi";
 import { useGetDashboardOverviewQuery } from "@/redux/features/dashboard/dashboardApi";
+import { useGetVendorsQuery } from "@/redux/features/vendors/vendorsApi";
 
 export default function DashboardOverviewPage() {
   const { data: profile } = useGetProfileQuery({});
   const { data: dashboardRes, isLoading: isDashboardLoading } = useGetDashboardOverviewQuery();
+  const { data: pendingVendorsRes } = useGetVendorsQuery({ status: "pending", page: 1, limit: 3 });
   const navigate = useNavigate();
-  const { vendors } = useVendors();
   const { plans } = useMembership();
   const { posts } = useForum();
 
   const stats = dashboardRes?.data;
-  const pendingVendors = vendors.filter((v) => v.status === "pending");
+  const pendingVendors = pendingVendorsRes?.data ?? [];
   const reportedPosts = posts.filter((p) => p.status === "reported");
 
   const firstName = profile?.data?.name.split(" ")[0] ?? "there";
@@ -40,15 +41,11 @@ export default function DashboardOverviewPage() {
             Welcome back, {firstName} 👋
           </h2>
           <p className="mt-1 text-sm text-mist-400">
-            Here's what's happening across Hubology today,{" "}
-            {formatDate(new Date())}.
+            Here's what's happening across Hubology today, {formatDate(new Date())}.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button
-            className="btn-gradient border-0!"
-            onClick={() => navigate("/vendors/applications")}
-          >
+          <Button className="btn-gradient border-0!" onClick={() => navigate("/vendors")}>
             Review applications
           </Button>
           <Button onClick={() => navigate("/forum")}>Moderate forum</Button>
@@ -100,15 +97,13 @@ export default function DashboardOverviewPage() {
       <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-5">
         <GlassCard flat className="xl:col-span-3">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-display text-[15px] font-semibold text-cloud-100">
-              Needs your attention
-            </h3>
+            <h3 className="font-display text-[15px] font-semibold text-cloud-100">Needs your attention</h3>
             <Button
               type="text"
               size="small"
               icon={<ArrowRightOutlined />}
               iconPosition="end"
-              onClick={() => navigate("/vendors/applications")}
+              onClick={() => navigate("/vendors")}
             >
               View all
             </Button>
@@ -120,20 +115,19 @@ export default function DashboardOverviewPage() {
             </p>
           ) : (
             <div className="space-y-2.5">
-              {pendingVendors.slice(0, 3).map((v) => (
+              {pendingVendors.map((v) => (
                 <button
-                  key={v.id}
-                  onClick={() => navigate("/vendors/applications")}
+                  key={v._id}
+                  type="button"
+                  onClick={() => navigate("/vendors")}
                   className="surface-hover flex w-full items-center justify-between gap-3 rounded-xl border border-navy-700/60 bg-navy-800/40 p-3 text-left hover:border-violet-600/40"
                 >
                   <div className="flex items-center gap-3">
-                    <Avatar src={v.profile} icon={<UserOutlined />} size={36} />
+                    <Avatar src={toFileUrl(v.image)} icon={<UserOutlined />} size={36} />
                     <div>
-                      <div className="text-sm font-medium text-cloud-100">
-                        {v.name}
-                      </div>
+                      <div className="text-sm font-medium text-cloud-100">{v.name}</div>
                       <div className="text-xs text-mist-400">
-                        Vendor application · {v.role}
+                        Pending application · {v.vendorProfile?.jobTitle || v.role}
                       </div>
                     </div>
                   </div>
@@ -143,16 +137,14 @@ export default function DashboardOverviewPage() {
               {reportedPosts.slice(0, 3).map((p) => (
                 <button
                   key={p.id}
+                  type="button"
                   onClick={() => navigate("/forum")}
                   className="surface-hover flex w-full items-center justify-between gap-3 rounded-xl border border-navy-700/60 bg-navy-800/40 p-3 text-left hover:border-violet-600/40"
                 >
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-medium text-cloud-100">
-                      {p.title}
-                    </div>
+                    <div className="truncate text-sm font-medium text-cloud-100">{p.title}</div>
                     <div className="text-xs text-mist-400">
-                      Forum post · {p.reports.length} report
-                      {p.reports.length !== 1 ? "s" : ""}
+                      Forum post · {p.reports.length} report{p.reports.length !== 1 ? "s" : ""}
                     </div>
                   </div>
                   <StatusTag tone="danger">Reported</StatusTag>
@@ -164,9 +156,7 @@ export default function DashboardOverviewPage() {
 
         <GlassCard flat className="xl:col-span-2">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-display text-[15px] font-semibold text-cloud-100">
-              Membership plans
-            </h3>
+            <h3 className="font-display text-[15px] font-semibold text-cloud-100">Membership plans</h3>
             <Button
               type="text"
               size="small"
@@ -186,9 +176,7 @@ export default function DashboardOverviewPage() {
                 <div>
                   <div className="flex items-center gap-1.5 text-sm font-medium text-cloud-100">
                     {plan.name}
-                    {plan.featured && (
-                      <StatusTag tone="violet">Featured</StatusTag>
-                    )}
+                    {plan.featured && <StatusTag tone="violet">Featured</StatusTag>}
                   </div>
                   <div className="text-xs text-mist-400">{plan.tagline}</div>
                 </div>

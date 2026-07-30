@@ -3,14 +3,13 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { PageLoader } from "@/components/ui/PageLoader";
-import ServiceBookingsPage from "./features/services/ServiceBookingsPage";
 
 // Route-level code splitting keeps the initial bundle lean — each page's
 // chunk is only fetched when the admin actually navigates there.
 const LoginPage = lazy(() => import("@/features/auth/LoginPage"));
 const DashboardOverviewPage = lazy(() => import("@/features/dashboard/DashboardOverviewPage"));
 const ServicesPage = lazy(() => import("@/features/services/ServicesPage"));
-const VendorApplicationsPage = lazy(() => import("@/features/vendors/VendorApplicationsPage"));
+const ServiceBookingsPage = lazy(() => import("@/features/services/ServiceBookingsPage"));
 const VendorsPage = lazy(() => import("@/features/vendors/VendorsPage"));
 const StorePage = lazy(() => import("@/features/store/StorePage"));
 const MembershipPage = lazy(() => import("@/features/membership/MembershipPage"));
@@ -31,7 +30,6 @@ export default function App() {
             <Route index element={<DashboardOverviewPage />} />
             <Route path="services" element={<ServicesPage />} />
             <Route path="services/bookings" element={<ServiceBookingsPage />} />
-            <Route path="vendors/applications" element={<VendorApplicationsPage />} />
             <Route path="vendors" element={<VendorsPage />} />
             <Route path="store" element={<StorePage />} />
             <Route path="membership" element={<MembershipPage />} />

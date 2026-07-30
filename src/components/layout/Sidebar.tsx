@@ -2,16 +2,16 @@ import { Badge } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 import { NAV_ITEMS } from "./navConfig";
 import { cn } from "@/lib/utils";
-import { useVendors } from "@/features/vendors/VendorsContext";
 import { useForum } from "@/features/forum/ForumContext";
+import { useGetDashboardOverviewQuery } from "@/redux/features/dashboard/dashboardApi";
 
 export function Sidebar({ mobile, onNavigate }: { mobile?: boolean; onNavigate?: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { vendors } = useVendors();
+  const { data: dashboardRes } = useGetDashboardOverviewQuery();
   const { posts } = useForum();
 
-  const pendingVendors = vendors.filter((v) => v.status === "pending").length;
+  const pendingVendors = dashboardRes?.data?.pendingVendors ?? 0;
   const reportedPosts = posts.filter((p) => p.status === "reported").length;
 
   const badgeCount = (key?: "pendingVendors" | "reportedPosts") => {

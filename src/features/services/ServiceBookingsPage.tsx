@@ -33,6 +33,7 @@ import {
 } from "./bookingStatusMaps";
 import { BookingDetailDrawer } from "./components/BookingDetailDrawer";
 import { BookingStatusSelect } from "./components/BookingStatusSelect";
+import { getImageUrl } from "@/lib/getImageUrl";
 
 const { RangePicker } = DatePicker;
 
@@ -111,7 +112,7 @@ export default function ServiceBookingsPage() {
       key: "user",
       render: (_, record) => (
         <div className="flex items-center gap-3">
-          <Avatar icon={<UserOutlined />} size={38} className="!bg-violet-600/25 !text-violet-glow" />
+          <Avatar src={getImageUrl(record.user.image ?? "")} size={38} className="!bg-violet-600/25 !text-violet-glow" />
           <div className="min-w-0">
             <div className="font-medium text-cloud-100">{record.user.name}</div>
             <div className="max-w-[200px] truncate text-xs text-mist-400">{record.user.email}</div>
