@@ -11,6 +11,8 @@ import {
   PieChartOutlined,
   CalendarOutlined,
   DollarOutlined,
+  SettingOutlined,
+  BookOutlined,
 } from "@ant-design/icons";
 import type { ComponentType } from "react";
 
@@ -25,7 +27,16 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { key: "overview", label: "Overview", path: "/", icon: DashboardOutlined },
-  { key: "services", label: "Services", path: "/services", icon: AppstoreOutlined },
+  {
+    key: "services",
+    label: "Services",
+    path: "/services",
+    icon: AppstoreOutlined,
+    children: [
+      { key: "services-manage", label: "Manage services", path: "/services", icon: SettingOutlined },
+      { key: "services-bookings", label: "Service bookings", path: "/services/bookings", icon: BookOutlined },
+    ],
+  },
   {
     key: "vendors",
     label: "Vendors",

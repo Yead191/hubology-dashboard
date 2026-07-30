@@ -6,7 +6,8 @@ import { Topbar } from "./Topbar";
 
 const PAGE_META: { match: (path: string) => boolean; title: string; subtitle?: string }[] = [
   { match: (p) => p === "/", title: "Overview", subtitle: "Everything happening across Hubology, at a glance" },
-  { match: (p) => p === "/services", title: "Services", subtitle: "Consulting packages shown in the services directory" },
+  { match: (p) => p === "/services", title: "Manage services", subtitle: "Create and update consulting packages shown on the site" },
+  { match: (p) => p === "/services/bookings", title: "Service bookings", subtitle: "Track and manage user bookings across all services" },
   { match: (p) => p === "/vendors/applications", title: "Vendor applications", subtitle: "Review, approve, or reject incoming expert applications" },
   { match: (p) => p === "/vendors", title: "Vendors", subtitle: "All verified experts and their subscription status" },
   { match: (p) => p === "/store", title: "Store", subtitle: "Digital products and office supplies catalog" },

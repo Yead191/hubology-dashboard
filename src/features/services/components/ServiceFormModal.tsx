@@ -1,86 +1,88 @@
-import { useEffect, useRef } from "react";
-import { Modal, Form, Input, InputNumber, Select, Switch, Button } from "antd";
-import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
-import { slugify } from "@/lib/utils";
-import { EXPERT_CATEGORIES, CURRENCY_OPTIONS } from "@/lib/constants";
-import type { Service, ServiceInput } from "../types";
+import { useEffect, useState } from "react";
+import { Modal, Form, Input, InputNumber, Switch, Button, Upload } from "antd";
+import { PlusOutlined, MinusCircleOutlined, InboxOutlined } from "@ant-design/icons";
+import type { UploadFile } from "antd/es/upload/interface";
+import { toFileUrl } from "@/config";
+import type { ApiService, ServiceFormPayload } from "@/redux/features/services/services.types";
 
 interface ServiceFormValues {
   title: string;
-  slug: string;
   tagline: string;
-  category: string;
-  currency: string;
   amount: number;
   frequency: string;
   featured: boolean;
   longDescription: string;
-  image: string;
   features: string[];
 }
 
 export function ServiceFormModal({
   open,
   initial,
+  loading,
   onCancel,
   onSubmit,
 }: {
   open: boolean;
-  initial?: Service | null;
+  initial?: ApiService | null;
+  loading?: boolean;
   onCancel: () => void;
-  onSubmit: (input: ServiceInput) => void;
+  onSubmit: (payload: ServiceFormPayload) => void;
 }) {
   const [form] = Form.useForm<ServiceFormValues>();
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [imageError, setImageError] = useState<string | null>(null);
   const isEdit = !!initial;
-  // Tracks whether the user has hand-edited the slug field directly, so we
-  // stop auto-deriving it from the title once they've taken over.
-  const slugTouchedRef = useRef(false);
 
   useEffect(() => {
     if (!open) return;
-    slugTouchedRef.current = isEdit;
+    setImageError(null);
+
     if (initial) {
       form.setFieldsValue({
         title: initial.title,
-        slug: initial.slug,
         tagline: initial.tagline,
-        category: initial.category,
-        currency: initial.price.currency,
         amount: initial.price.amount,
         frequency: initial.price.frequency,
         featured: initial.featured,
         longDescription: initial.longDescription,
-        image: initial.image,
-        features: initial.features,
+        features: initial.features?.length ? initial.features : [""],
       });
+      setFileList(
+        initial.image
+          ? [
+              {
+                uid: "-1",
+                name: "current-image",
+                status: "done",
+                url: toFileUrl(initial.image),
+              },
+            ]
+          : []
+      );
     } else {
       form.resetFields();
-      form.setFieldsValue({ currency: "$", frequency: "per session", featured: false, features: [""] });
+      form.setFieldsValue({ frequency: "per session", featured: false, features: [""] });
+      setFileList([]);
     }
-  }, [open, initial, form, isEdit]);
-
-  const handleTitleChange = (title: string) => {
-    if (!slugTouchedRef.current) {
-      form.setFieldsValue({ slug: slugify(title) });
-    }
-  };
-
-  const handleSlugChange = () => {
-    slugTouchedRef.current = true;
-  };
+  }, [open, initial, form]);
 
   const handleFinish = (values: ServiceFormValues) => {
-    const features = values.features.map((f) => f.trim()).filter(Boolean);
+    const imageFile = fileList[0]?.originFileObj as File | undefined;
+
+    if (!isEdit && !imageFile) {
+      setImageError("Upload a cover image for this service");
+      return;
+    }
+
     onSubmit({
       title: values.title.trim(),
-      slug: slugify(values.slug || values.title),
       tagline: values.tagline.trim(),
-      category: values.category,
-      price: { currency: values.currency, amount: values.amount, frequency: values.frequency.trim() },
+      amount: values.amount,
+      frequency: values.frequency.trim(),
       featured: values.featured,
       longDescription: values.longDescription.trim(),
-      image: values.image.trim(),
-      features: features.length ? features : ["Feature detail"],
+      features: values.features.map((f) => f.trim()).filter(Boolean),
+      imageFile: imageFile ?? null,
     });
   };
 
@@ -92,68 +94,58 @@ export function ServiceFormModal({
       width={640}
       footer={null}
       destroyOnHidden
+      maskClosable={!loading}
     >
       <Form form={form} layout="vertical" requiredMark={false} onFinish={handleFinish} className="mt-2">
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
-          <Form.Item
-            label="Title"
-            name="title"
-            rules={[{ required: true, message: "Give the service a title" }]}
-          >
-            <Input placeholder="Corporation" onChange={(e) => handleTitleChange(e.target.value)} />
-          </Form.Item>
-
-          <Form.Item
-            label="URL slug"
-            name="slug"
-            rules={[{ required: true, message: "A slug is required" }]}
-            tooltip="Used in the service detail URL: /services/[slug]"
-          >
-            <Input placeholder="corporation" onChange={handleSlugChange} />
-          </Form.Item>
-        </div>
-
-        <Form.Item
-          label="Tagline"
-          name="tagline"
-          rules={[{ required: true, message: "Add a short tagline" }]}
-        >
-          <Input placeholder="Form your company the right way, fast." />
+        <Form.Item label="Title" name="title" rules={[{ required: true, message: "Give the service a title" }]}>
+          <Input placeholder="EIN" />
         </Form.Item>
 
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-3">
-          <Form.Item label="Currency" name="currency" rules={[{ required: true }]}>
-            <Select options={CURRENCY_OPTIONS.map((c) => ({ label: c, value: c }))} />
+          <Form.Item label="Tagline" name="tagline" rules={[{ required: true, message: "Add a short tagline" }]}>
+            <Input.TextArea placeholder="Obtain your Employer Identification Number quickly…" rows={4} />
           </Form.Item>
+
+        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
           <Form.Item label="Amount" name="amount" rules={[{ required: true, message: "Enter a price" }]}>
-            <InputNumber min={0} className="!w-full" placeholder="59" />
+            <InputNumber min={0} className="w-full!" prefix="$" placeholder="29" />
           </Form.Item>
-          <Form.Item label="Billed as" name="frequency" rules={[{ required: true, message: "e.g. per session" }]}>
+          <Form.Item
+            label="Billed as"
+            name="frequency"
+            rules={[{ required: true, message: "e.g. per session" }]}
+          >
             <Input placeholder="per session" />
           </Form.Item>
         </div>
 
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
-          <Form.Item label="Category" name="category" rules={[{ required: true, message: "Choose a category" }]}>
-            <Select
-              placeholder="Select category"
-              options={EXPERT_CATEGORIES.map((c) => ({ label: c, value: c }))}
-              showSearch
-            />
-          </Form.Item>
-
-          <Form.Item label="Featured on services page" name="featured" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-        </div>
-
-        <Form.Item
-          label="Cover image URL"
-          name="image"
-          rules={[{ required: true, message: "Add an image URL" }]}
-        >
-          <Input placeholder="https://images.unsplash.com/…" />
+        <Form.Item label="Featured on services page" name="featured" valuePropName="checked">
+          <Switch />
         </Form.Item>
+
+        <div className="mb-4">
+          <div className="mb-2 text-sm font-medium text-cloud-100">
+            Cover image {isEdit ? <span className="font-normal text-mist-600">(optional to replace)</span> : null}
+          </div>
+          <Upload.Dragger
+            accept="image/jpeg,image/png,image/webp,image/jpg"
+            maxCount={1}
+            listType="picture"
+            fileList={fileList}
+            beforeUpload={() => false}
+            onChange={({ fileList: next }) => {
+              setFileList(next.slice(-1));
+              setImageError(null);
+            }}
+            className="!bg-navy-800/40"
+          >
+            <p className="ant-upload-drag-icon !mb-2">
+              <InboxOutlined className="!text-violet-glow" />
+            </p>
+            <p className="text-sm text-cloud-100">Click or drag an image here</p>
+            <p className="text-xs text-mist-600">JPG, PNG or WebP</p>
+          </Upload.Dragger>
+          {imageError && <p className="mt-1.5 text-xs text-danger">{imageError}</p>}
+        </div>
 
         <Form.Item
           label="Long description"
@@ -175,7 +167,7 @@ export function ServiceFormModal({
                       className="!mb-0 flex-1"
                       rules={[{ required: true, message: "Feature can't be empty" }]}
                     >
-                      <Input placeholder="Corporation filing" />
+                      <Input placeholder="Fast IRS filing" />
                     </Form.Item>
                     <button
                       type="button"
@@ -202,8 +194,10 @@ export function ServiceFormModal({
         </Form.List>
 
         <div className="mt-6 flex justify-end gap-2 border-t border-navy-700/60 pt-4">
-          <Button onClick={onCancel}>Cancel</Button>
-          <Button type="primary" htmlType="submit" className="btn-gradient !border-0">
+          <Button onClick={onCancel} disabled={loading}>
+            Cancel
+          </Button>
+          <Button type="primary" htmlType="submit" loading={loading} className="btn-gradient !border-0">
             {isEdit ? "Save changes" : "Create service"}
           </Button>
         </div>

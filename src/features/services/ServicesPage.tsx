@@ -1,76 +1,113 @@
-import { useMemo, useState } from "react";
-import { Button, Image, Input, Segmented, Table, Tooltip, type TableProps } from "antd";
-import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, StarFilled } from "@ant-design/icons";
+import { useEffect, useState } from "react";
+import { Button, Image, Segmented, Table, Tooltip, type TableProps } from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined, StarFilled } from "@ant-design/icons";
 import { toast } from "sonner";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { PageToolbar } from "@/components/ui/PageToolbar";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { StatusTag } from "@/components/ui/StatusTag";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
 import { useConfirmDelete } from "@/hooks/useConfirmDelete";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { useServices } from "./ServicesContext";
+import { toFileUrl } from "@/config";
+import {
+  useCreateServiceMutation,
+  useDeleteServiceMutation,
+  useGetServicesQuery,
+  useUpdateServiceMutation,
+} from "@/redux/features/services/servicesApi";
+import { buildServiceFormData } from "@/redux/features/services/buildServiceFormData";
+import type { ApiService, ServiceFormPayload } from "@/redux/features/services/services.types";
 import { ServiceFormModal } from "./components/ServiceFormModal";
-import type { Service } from "./types";
 
 type FeaturedFilter = "all" | "featured" | "standard";
 
-export default function ServicesPage() {
-  const { services, addService, updateService, removeService } = useServices();
-  const [search, setSearch] = useState("");
-  const [featuredFilter, setFeaturedFilter] = useState<FeaturedFilter>("all");
-  const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState<Service | null>(null);
+function getErrorMessage(error: unknown) {
+  if (typeof error === "object" && error !== null) {
+    const err = error as { data?: { message?: string }; message?: string };
+    return err.data?.message ?? err.message ?? "Something went wrong. Please try again.";
+  }
+  return "Something went wrong. Please try again.";
+}
 
-  const deleteFlow = useConfirmDelete<Service>((record) => {
-    removeService(record.id);
-    toast.success("Service removed", { description: `"${record.title}" is no longer listed.` });
+export default function ServicesPage() {
+  const { value: search, setValue: setSearch, debouncedValue: searchTerm } = useDebouncedSearch();
+  const [featuredFilter, setFeaturedFilter] = useState<FeaturedFilter>("all");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<ApiService | null>(null);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm]);
+
+  const featuredParam =
+    featuredFilter === "featured" ? true : featuredFilter === "standard" ? false : ("" as const);
+
+  const { data, isFetching } = useGetServicesQuery({
+    page,
+    limit,
+    searchTerm,
+    featured: featuredParam,
   });
 
-  const filtered = useMemo(() => {
-    return services.filter((s) => {
-      const matchesSearch =
-        !search.trim() ||
-        s.title.toLowerCase().includes(search.toLowerCase()) ||
-        s.category.toLowerCase().includes(search.toLowerCase());
-      const matchesFeatured =
-        featuredFilter === "all" ||
-        (featuredFilter === "featured" && s.featured) ||
-        (featuredFilter === "standard" && !s.featured);
-      return matchesSearch && matchesFeatured;
-    });
-  }, [services, search, featuredFilter]);
+  const [createService, { isLoading: isCreating }] = useCreateServiceMutation();
+  const [updateService, { isLoading: isUpdating }] = useUpdateServiceMutation();
+  const [deleteService] = useDeleteServiceMutation();
+
+  const services = data?.data ?? [];
+  const pagination = data?.pagination;
+
+  const deleteFlow = useConfirmDelete<ApiService>(async (record) => {
+    try {
+      await deleteService(record._id).unwrap();
+      toast.success("Service removed", { description: `"${record.title}" is no longer listed.` });
+    } catch (error) {
+      toast.error("Couldn't delete service", { description: getErrorMessage(error) });
+    }
+  });
 
   const openCreate = () => {
     setEditing(null);
     setFormOpen(true);
   };
 
-  const openEdit = (service: Service) => {
+  const openEdit = (service: ApiService) => {
     setEditing(service);
     setFormOpen(true);
   };
 
-  const handleSubmit = (input: Parameters<typeof addService>[0]) => {
-    if (editing) {
-      updateService(editing.id, input);
-      toast.success("Service updated", { description: `"${input.title}" has been saved.` });
-    } else {
-      addService(input);
-      toast.success("Service created", { description: `"${input.title}" is now live on the services page.` });
+  const handleSubmit = async (payload: ServiceFormPayload) => {
+    const body = buildServiceFormData(payload);
+    try {
+      if (editing) {
+        await updateService({ id: editing._id, body }).unwrap();
+        toast.success("Service updated", { description: `"${payload.title}" has been saved.` });
+      } else {
+        await createService(body).unwrap();
+        toast.success("Service created", {
+          description: `"${payload.title}" is now live on the services page.`,
+        });
+      }
+      setFormOpen(false);
+      setEditing(null);
+    } catch (error) {
+      toast.error(editing ? "Couldn't update service" : "Couldn't create service", {
+        description: getErrorMessage(error),
+      });
     }
-    setFormOpen(false);
   };
 
-  const columns: TableProps<Service>["columns"] = [
+  const columns: TableProps<ApiService>["columns"] = [
     {
       title: "Service",
-      dataIndex: "title",
       key: "title",
       render: (_, record) => (
         <div className="flex items-center gap-3">
           <Image
-            src={record.image}
+            src={toFileUrl(record.image)}
             alt={record.title}
             width={48}
             height={48}
@@ -89,34 +126,31 @@ export default function ServicesPage() {
       ),
     },
     {
-      title: "Category",
-      dataIndex: "category",
-      key: "category",
-      responsive: ["md"],
-      render: (category: string) => <StatusTag tone="violet">{category}</StatusTag>,
-    },
-    {
       title: "Price",
       key: "price",
       render: (_, record) => (
-        <span className="font-medium text-cloud-100">
-          {formatCurrency(record.price.amount, record.price.currency)}
-        </span>
+        <span className="font-medium text-cloud-100">{formatCurrency(record.price.amount)}</span>
       ),
     },
     {
       title: "Billed",
       key: "frequency",
-      responsive: ["lg"],
+      responsive: ["md"],
       render: (_, record) => <span className="text-mist-400">{record.price.frequency}</span>,
     },
     {
+      title: "Features",
+      key: "features",
+      responsive: ["lg"],
+      render: (_, record) => (
+        <span className="text-mist-400">{record.features?.length ?? 0} items</span>
+      ),
+    },
+    {
       title: "Updated",
-      dataIndex: "updatedAt",
       key: "updatedAt",
       responsive: ["lg"],
-      render: (value: string) => <span className="text-mist-400">{formatDate(value)}</span>,
-      sorter: (a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
+      render: (_, record) => <span className="text-mist-400">{formatDate(record.updatedAt)}</span>,
     },
     {
       title: "",
@@ -137,50 +171,71 @@ export default function ServicesPage() {
 
   return (
     <div>
-      <PageToolbar eyebrow="Services" count={filtered.length}>
+      <PageToolbar eyebrow="Manage services" count={pagination?.total}>
         <Segmented
           value={featuredFilter}
-          onChange={(v) => setFeaturedFilter(v as FeaturedFilter)}
+          onChange={(v) => {
+            setFeaturedFilter(v as FeaturedFilter);
+            setPage(1);
+          }}
           options={[
             { label: "All", value: "all" },
             { label: "Featured", value: "featured" },
             { label: "Standard", value: "standard" },
           ]}
         />
-        <Input
-          allowClear
-          prefix={<SearchOutlined className="text-mist-600" />}
+        <SearchInput
           placeholder="Search services…"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={setSearch}
           className="!w-56"
         />
-        <Button type="primary" icon={<PlusOutlined />} className="btn-gradient !border-0" onClick={openCreate}>
+        <Button type="primary" icon={<PlusOutlined />} className="btn-gradient border-0!" onClick={openCreate}>
           New service
         </Button>
       </PageToolbar>
 
       <GlassCard flat padded={false}>
-        {filtered.length === 0 ? (
+        {!isFetching && services.length === 0 ? (
           <EmptyState
             icon={<PlusOutlined />}
-            title="No services match your filters"
+            title="No services found"
             description="Try clearing the search or filter, or create a new service package."
             actionLabel="New service"
             onAction={openCreate}
           />
         ) : (
           <Table
-            rowKey="id"
+            rowKey="_id"
             columns={columns}
-            dataSource={filtered}
-            pagination={{ pageSize: 8, hideOnSinglePage: true }}
-            className="hubology-table"
+            dataSource={services}
+            loading={isFetching}
+            pagination={{
+              current: pagination?.page ?? page,
+              pageSize: pagination?.limit ?? limit,
+              total: pagination?.total ?? 0,
+              showSizeChanger: true,
+              hideOnSinglePage: false,
+              onChange: (nextPage, nextPageSize) => {
+                setPage(nextPage);
+                setLimit(nextPageSize);
+              },
+            }}
           />
         )}
       </GlassCard>
 
-      <ServiceFormModal open={formOpen} initial={editing} onCancel={() => setFormOpen(false)} onSubmit={handleSubmit} />
+      <ServiceFormModal
+        open={formOpen}
+        initial={editing}
+        loading={isCreating || isUpdating}
+        onCancel={() => {
+          if (isCreating || isUpdating) return;
+          setFormOpen(false);
+          setEditing(null);
+        }}
+        onSubmit={handleSubmit}
+      />
 
       <ConfirmDeleteModal
         open={deleteFlow.isOpen}

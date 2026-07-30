@@ -52,20 +52,27 @@ export function Sidebar({ mobile, onNavigate }: { mobile?: boolean; onNavigate?:
               />
               {item.children && (
                 <div className="ml-4 mt-1 space-y-0.5 border-l border-navy-600/60 pl-3">
-                  {item.children.map((child) => (
-                    <NavLink
-                      key={child.key}
-                      active={location.pathname === child.path}
-                      icon={child.icon}
-                      label={child.label}
-                      badge={badgeCount(child.badgeKey)}
-                      compact
-                      onClick={() => {
-                        navigate(child.path);
-                        onNavigate?.();
-                      }}
-                    />
-                  ))}
+                  {item.children.map((child) => {
+                    // Prefer exact match so sibling routes like /services and
+                    // /services/bookings don't both light up as active.
+                    const childActive =
+                      location.pathname === child.path ||
+                      (child.path !== item.path && location.pathname.startsWith(`${child.path}/`));
+                    return (
+                      <NavLink
+                        key={child.key}
+                        active={childActive}
+                        icon={child.icon}
+                        label={child.label}
+                        badge={badgeCount(child.badgeKey)}
+                        compact
+                        onClick={() => {
+                          navigate(child.path);
+                          onNavigate?.();
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>

@@ -31,6 +31,7 @@ export const baseApi = createApi({
     "Donations",
     "Vendors",
     "Services",
+    "Bookings",
     "Store",
     "Membership",
     "Forum",

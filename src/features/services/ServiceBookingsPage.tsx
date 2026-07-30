@@ -1,0 +1,292 @@
+import { useEffect, useMemo, useState } from "react";
+import { Avatar, Button, DatePicker, Select, Table, type TableProps } from "antd";
+import {
+  EyeOutlined,
+  UserOutlined,
+  CalendarOutlined,
+  BookOutlined,
+} from "@ant-design/icons";
+import type { Dayjs } from "dayjs";
+import { toast } from "sonner";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { PageToolbar } from "@/components/ui/PageToolbar";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { StatusTag } from "@/components/ui/StatusTag";
+import { StatCard } from "@/components/ui/StatCard";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { useGetServicesQuery } from "@/redux/features/services/servicesApi";
+import {
+  useGetBookingsQuery,
+  useUpdateBookingStatusMutation,
+} from "@/redux/features/bookings/bookingsApi";
+import {
+  BOOKING_STATUS_OPTIONS,
+  type ApiBooking,
+  type BookingStatus,
+} from "@/redux/features/bookings/bookings.types";
+import {
+  bookingStatusLabelMap,
+  paymentStatusLabelMap,
+  paymentStatusToneMap,
+} from "./bookingStatusMaps";
+import { BookingDetailDrawer } from "./components/BookingDetailDrawer";
+import { BookingStatusSelect } from "./components/BookingStatusSelect";
+
+const { RangePicker } = DatePicker;
+
+function getErrorMessage(error: unknown) {
+  if (typeof error === "object" && error !== null) {
+    const err = error as { data?: { message?: string }; message?: string };
+    return err.data?.message ?? err.message ?? "Something went wrong. Please try again.";
+  }
+  return "Something went wrong. Please try again.";
+}
+
+export default function ServiceBookingsPage() {
+  const { value: search, setValue: setSearch, debouncedValue: searchTerm } = useDebouncedSearch();
+  const [serviceId, setServiceId] = useState<string>("");
+  const [status, setStatus] = useState<BookingStatus | "">("");
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [viewing, setViewing] = useState<ApiBooking | null>(null);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm]);
+
+  const { data: servicesRes } = useGetServicesQuery({ page: 1, limit: 100 });
+  const serviceOptions = useMemo(
+    () =>
+      (servicesRes?.data ?? []).map((s) => ({
+        label: s.title,
+        value: s._id,
+      })),
+    [servicesRes]
+  );
+
+  const { data, isFetching } = useGetBookingsQuery({
+    page,
+    limit,
+    searchTerm,
+    serviceId: serviceId || undefined,
+    status: status || undefined,
+    startDate: dateRange?.[0]?.startOf("day").toISOString(),
+    endDate: dateRange?.[1]?.endOf("day").toISOString(),
+  });
+
+  const [updateStatus, { isLoading: isUpdatingStatus }] = useUpdateBookingStatusMutation();
+
+  const bookings = data?.data ?? [];
+  const pagination = data?.pagination;
+
+  const statusCounts = useMemo(() => {
+    const counts: Record<BookingStatus, number> = {
+      pending: 0,
+      confirmed: 0,
+      completed: 0,
+      cancelled: 0,
+    };
+    for (const b of bookings) counts[b.status] += 1;
+    return counts;
+  }, [bookings]);
+
+  const handleStatusChange = async (id: string, nextStatus: BookingStatus) => {
+    try {
+      await updateStatus({ id, status: nextStatus }).unwrap();
+      toast.success("Booking updated", {
+        description: `Status changed to ${bookingStatusLabelMap[nextStatus]}.`,
+      });
+      setViewing((prev) => (prev && prev._id === id ? { ...prev, status: nextStatus } : prev));
+    } catch (error) {
+      toast.error("Couldn't update status", { description: getErrorMessage(error) });
+    }
+  };
+
+  const columns: TableProps<ApiBooking>["columns"] = [
+    {
+      title: "Customer",
+      key: "user",
+      render: (_, record) => (
+        <div className="flex items-center gap-3">
+          <Avatar icon={<UserOutlined />} size={38} className="!bg-violet-600/25 !text-violet-glow" />
+          <div className="min-w-0">
+            <div className="font-medium text-cloud-100">{record.user.name}</div>
+            <div className="max-w-[200px] truncate text-xs text-mist-400">{record.user.email}</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Service",
+      key: "service",
+      render: (_, record) => (
+        <span className="font-medium text-cloud-100">{record?.service?.title}</span>
+      ),
+    },
+    {
+      title: "Preferred",
+      key: "schedule",
+      responsive: ["md"],
+      render: (_, record) => (
+        <div>
+          <div className="text-cloud-100">{formatDate(record.preferredDate)}</div>
+          <div className="text-xs text-mist-400">{record.preferredTime}</div>
+        </div>
+      ),
+    },
+    {
+      title: "Price",
+      key: "price",
+      render: (_, record) => (
+        <span className="font-semibold text-cloud-100">{formatCurrency(record.price)}</span>
+      ),
+    },
+    {
+      title: "Payment",
+      key: "paymentStatus",
+      responsive: ["lg"],
+      render: (_, record) => (
+        <StatusTag tone={paymentStatusToneMap[record.paymentStatus]}>
+          {paymentStatusLabelMap[record.paymentStatus] ?? record.paymentStatus}
+        </StatusTag>
+      ),
+    },
+    {
+      title: "Status",
+      key: "status",
+      render: (_, record) => (
+        <BookingStatusSelect
+          value={record.status}
+          onChange={(value) => handleStatusChange(record._id, value)}
+        />
+      ),
+    },
+    {
+      title: "",
+      key: "actions",
+      width: 100,
+      render: (_, record) => (
+        <Button size="small" icon={<EyeOutlined />} onClick={() => setViewing(record)}>
+          View
+        </Button>
+      ),
+    },
+  ];
+
+  return (
+    <div>
+      <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard
+          label="Pending"
+          value={statusCounts.pending}
+          icon={<CalendarOutlined />}
+          tone="warning"
+        />
+        <StatCard
+          label="Confirmed"
+          value={statusCounts.confirmed}
+          icon={<BookOutlined />}
+          tone="info"
+        />
+        <StatCard
+          label="Completed"
+          value={statusCounts.completed}
+          icon={<BookOutlined />}
+          tone="success"
+        />
+        <StatCard
+          label="Cancelled"
+          value={statusCounts.cancelled}
+          icon={<BookOutlined />}
+          tone="danger"
+        />
+      </div>
+
+      <PageToolbar eyebrow="Service bookings" count={pagination?.total} />
+
+      <GlassCard flat className="mb-4">
+        <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-4">
+          <SearchInput
+            placeholder="Search name, email…"
+            value={search}
+            onChange={setSearch}
+          />
+          <Select
+            allowClear
+            placeholder="All services"
+            value={serviceId || undefined}
+            options={serviceOptions}
+            onChange={(value) => {
+              setServiceId(value ?? "");
+              setPage(1);
+            }}
+          />
+          <Select
+            allowClear
+            placeholder="All statuses"
+            value={status || undefined}
+            options={BOOKING_STATUS_OPTIONS.map((s) => ({
+              label: bookingStatusLabelMap[s],
+              value: s,
+            }))}
+            onChange={(value) => {
+              setStatus((value as BookingStatus) ?? "");
+              setPage(1);
+            }}
+          />
+          <RangePicker
+            className="!w-full"
+            value={dateRange}
+            onChange={(range) => {
+              setDateRange((range as [Dayjs, Dayjs] | null) ?? null);
+              setPage(1);
+            }}
+            placeholder={["From date", "To date"]}
+          />
+        </div>
+      </GlassCard>
+
+      <GlassCard flat padded={false}>
+        {!isFetching && bookings.length === 0 ? (
+          <EmptyState
+            icon={<BookOutlined />}
+            title="No bookings found"
+            description="Try adjusting search, service, status, or date filters."
+          />
+        ) : (
+          <Table
+            rowKey="_id"
+            columns={columns}
+            dataSource={bookings}
+            loading={isFetching}
+            pagination={{
+              current: pagination?.page ?? page,
+              pageSize: pagination?.limit ?? limit,
+              total: pagination?.total ?? 0,
+              showSizeChanger: true,
+              showTotal: (total) => `${total} bookings`,
+              onChange: (nextPage, nextPageSize) => {
+                setPage(nextPage);
+                setLimit(nextPageSize);
+              },
+            }}
+          />
+        )}
+      </GlassCard>
+
+      <BookingDetailDrawer
+        booking={viewing}
+        open={!!viewing}
+        updating={isUpdatingStatus}
+        onClose={() => setViewing(null)}
+        onStatusChange={(next) => {
+          if (!viewing) return;
+          handleStatusChange(viewing._id, next);
+        }}
+      />
+    </div>
+  );
+}
