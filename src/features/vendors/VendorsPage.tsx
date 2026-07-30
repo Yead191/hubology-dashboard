@@ -243,7 +243,7 @@ export default function VendorsPage() {
           <Tooltip title="View profile">
             <Button
               type="text"
-              className="!text-mist-400 hover:!bg-violet-600/15 hover:!text-violet-glow"
+              className="text-mist-400! hover:bg-violet-600/15! hover:text-violet-glow!"
               icon={<EyeOutlined />}
               onClick={() => setViewing(record)}
             />
@@ -327,12 +327,12 @@ export default function VendorsPage() {
             placeholder="Search by name, email, company…"
             value={search}
             onChange={setSearch}
-            className="sm:!w-64"
+            className="sm:w-64!"
           />
           <Select
             allowClear
             placeholder="Availability"
-            className="sm:!w-44"
+            className="sm:w-44!"
             value={availability || undefined}
             options={VENDOR_AVAILABILITY_OPTIONS.map((a) => ({ label: a, value: a }))}
             onChange={(value) => {
@@ -343,7 +343,7 @@ export default function VendorsPage() {
           <Select
             allowClear
             placeholder="Hourly rate"
-            className="sm:!w-40"
+            className="sm:w-40!"
             value={hourlyRateRange || undefined}
             options={VENDOR_HOURLY_RATE_RANGES.map((r) => ({ label: r.label, value: r.value }))}
             onChange={(value) => {

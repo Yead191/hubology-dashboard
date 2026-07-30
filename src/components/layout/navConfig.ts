@@ -12,6 +12,7 @@ import {
   DollarOutlined,
   SettingOutlined,
   BookOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import type { ComponentType } from "react";
 
@@ -32,8 +33,18 @@ export const NAV_ITEMS: NavItem[] = [
     path: "/services",
     icon: AppstoreOutlined,
     children: [
-      { key: "services-manage", label: "Manage services", path: "/services", icon: SettingOutlined },
-      { key: "services-bookings", label: "Service bookings", path: "/services/bookings", icon: BookOutlined },
+      {
+        key: "services-manage",
+        label: "Manage services",
+        path: "/services",
+        icon: SettingOutlined,
+      },
+      {
+        key: "services-bookings",
+        label: "Service bookings",
+        path: "/services/bookings",
+        icon: BookOutlined,
+      },
     ],
   },
   {
@@ -44,19 +55,30 @@ export const NAV_ITEMS: NavItem[] = [
     badgeKey: "pendingVendors",
   },
   {
-    key: "ifundayiti",
-    label: "IFundAyiti",
-    path: "/ifundayiti",
-    icon: HeartOutlined,
-    children: [
-      { key: "ifundayiti-overview", label: "Overview", path: "/ifundayiti", icon: PieChartOutlined },
-      { key: "ifundayiti-applications", label: "Applications", path: "/ifundayiti/applications", icon: FileSearchOutlined },
-      { key: "ifundayiti-periods", label: "Application Periods", path: "/ifundayiti/periods", icon: CalendarOutlined },
-      { key: "ifundayiti-donations", label: "Donations", path: "/ifundayiti/donations", icon: DollarOutlined },
-    ],
+    key: "users",
+    label: "Users",
+    path: "/users",
+    icon: UserOutlined,
   },
+  // {
+  //   key: "ifundayiti",
+  //   label: "IFundAyiti",
+  //   path: "/ifundayiti",
+  //   icon: HeartOutlined,
+  //   children: [
+  //     { key: "ifundayiti-overview", label: "Overview", path: "/ifundayiti", icon: PieChartOutlined },
+  //     { key: "ifundayiti-applications", label: "Applications", path: "/ifundayiti/applications", icon: FileSearchOutlined },
+  //     { key: "ifundayiti-periods", label: "Application Periods", path: "/ifundayiti/periods", icon: CalendarOutlined },
+  //     { key: "ifundayiti-donations", label: "Donations", path: "/ifundayiti/donations", icon: DollarOutlined },
+  //   ],
+  // },
   { key: "store", label: "Store", path: "/store", icon: ShopOutlined },
-  { key: "membership", label: "Membership", path: "/membership", icon: CrownOutlined },
+  {
+    key: "membership",
+    label: "Membership",
+    path: "/membership",
+    icon: CrownOutlined,
+  },
   {
     key: "forum",
     label: "Forum moderation",

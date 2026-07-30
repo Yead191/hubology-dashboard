@@ -37,7 +37,7 @@ export function BookingDetailDrawer({
   return (
     <Drawer open={open} onClose={onClose} width={460} title="Booking details" destroyOnHidden>
       <div className="flex items-start gap-4">
-        <Avatar icon={<UserOutlined />} size={56} className="!bg-violet-600/30 !text-violet-glow" />
+        <Avatar icon={<UserOutlined />} size={56} className="bg-violet-600/30! text-violet-glow!" />
         <div className="min-w-0 flex-1">
           <h2 className="font-display text-lg font-semibold text-cloud-100">{booking.user.name}</h2>
           <p className="truncate text-sm text-mist-400">{booking.user.email}</p>

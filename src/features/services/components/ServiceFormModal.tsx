@@ -136,10 +136,10 @@ export function ServiceFormModal({
               setFileList(next.slice(-1));
               setImageError(null);
             }}
-            className="!bg-navy-800/40"
+            className="bg-navy-800/40!"
           >
-            <p className="ant-upload-drag-icon !mb-2">
-              <InboxOutlined className="!text-violet-glow" />
+            <p className="ant-upload-drag-icon mb-2!">
+              <InboxOutlined className="text-violet-glow!" />
             </p>
             <p className="text-sm text-cloud-100">Click or drag an image here</p>
             <p className="text-xs text-mist-600">JPG, PNG or WebP</p>
@@ -164,7 +164,7 @@ export function ServiceFormModal({
                   <div key={field.key} className="flex items-center gap-2">
                     <Form.Item
                       {...field}
-                      className="!mb-0 flex-1"
+                      className="mb-0! flex-1!"
                       rules={[{ required: true, message: "Feature can't be empty" }]}
                     >
                       <Input placeholder="Fast IRS filing" />
@@ -184,7 +184,7 @@ export function ServiceFormModal({
                 type="dashed"
                 onClick={() => add("")}
                 icon={<PlusOutlined />}
-                className="!mt-2.5 !border-navy-600 !text-mist-400"
+                className="mt-2.5! border-navy-600! text-mist-400!"
                 block
               >
                 Add feature
@@ -197,7 +197,7 @@ export function ServiceFormModal({
           <Button onClick={onCancel} disabled={loading}>
             Cancel
           </Button>
-          <Button type="primary" htmlType="submit" loading={loading} className="btn-gradient !border-0">
+          <Button type="primary" htmlType="submit" loading={loading} className="btn-gradient border-0!">
             {isEdit ? "Save changes" : "Create service"}
           </Button>
         </div>

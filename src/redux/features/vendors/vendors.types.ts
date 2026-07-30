@@ -72,10 +72,11 @@ export const VENDOR_STATUS_OPTIONS: VendorAccountStatus[] = [
 ];
 
 export const VENDOR_AVAILABILITY_OPTIONS = [
-  "Project Based",
-  "Full-time",
-  "Part-time",
-  "Advisory",
+
+  "Full Time",
+  "Part Time",
+  "Weekends Only",
+  "Limited",
 ] as const;
 
 export const VENDOR_HOURLY_RATE_RANGES = [

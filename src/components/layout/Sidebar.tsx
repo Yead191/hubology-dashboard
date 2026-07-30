@@ -80,17 +80,6 @@ export function Sidebar({ mobile, onNavigate }: { mobile?: boolean; onNavigate?:
         </NavGroup>
       </nav>
 
-      <div className="mx-3 mb-4 rounded-2xl border border-navy-600/50 bg-navy-800/60 p-3.5">
-        <div className="text-[11px] font-medium uppercase tracking-wide text-mist-600">Workspace status</div>
-        <div className="mt-2 flex items-center justify-between text-xs">
-          <span className="text-mist-400">Pending applications</span>
-          <span className="font-semibold text-cloud-100">{pendingVendors}</span>
-        </div>
-        <div className="mt-1.5 flex items-center justify-between text-xs">
-          <span className="text-mist-400">Reported posts</span>
-          <span className="font-semibold text-cloud-100">{reportedPosts}</span>
-        </div>
-      </div>
     </div>
   );
 }
@@ -122,8 +111,8 @@ function NavLink({
         "surface-hover flex w-full items-center gap-2.5 rounded-xl px-3 text-left text-[13.5px] font-medium",
         compact ? "py-1.5" : "py-2.5",
         active
-          ? "bg-gradient-to-r from-[#8131F0]/25 to-[#4A1C8A]/20 text-cloud-100 gradient-ring"
-          : "text-mist-400 hover:bg-white/[0.04] hover:text-cloud-100"
+          ? "bg-linear-to-r from-[#8131F0]/25 to-[#4A1C8A]/20 text-cloud-100 gradient-ring"
+          : "text-mist-400 hover:bg-white/4 hover:text-cloud-100"
       )}
     >
       <Icon />

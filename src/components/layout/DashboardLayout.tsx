@@ -9,6 +9,7 @@ const PAGE_META: { match: (path: string) => boolean; title: string; subtitle?: s
   { match: (p) => p === "/services", title: "Manage services", subtitle: "Create and update consulting packages shown on the site" },
   { match: (p) => p === "/services/bookings", title: "Service bookings", subtitle: "Track and manage user bookings across all services" },
   { match: (p) => p === "/vendors", title: "Vendors", subtitle: "Review applications and manage vendor accounts" },
+  { match: (p) => p === "/users", title: "Users", subtitle: "View member accounts and manage access status" },
   { match: (p) => p === "/store", title: "Store", subtitle: "Digital products and office supplies catalog" },
   { match: (p) => p === "/membership", title: "Membership plans", subtitle: "Tiered subscription plans available to members" },
   { match: (p) => p === "/forum", title: "Forum moderation", subtitle: "Reported posts awaiting a moderation decision" },

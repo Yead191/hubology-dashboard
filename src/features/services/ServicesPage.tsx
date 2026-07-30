@@ -111,7 +111,7 @@ export default function ServicesPage() {
             alt={record.title}
             width={48}
             height={48}
-            className="!rounded-lg object-cover"
+            className="rounded-lg! object-cover!"
             style={{ objectFit: "cover" }}
             preview={{ mask: false }}
           />
@@ -120,7 +120,7 @@ export default function ServicesPage() {
               {record.title}
               {record.featured && <StarFilled className="text-[12px] text-warning" />}
             </div>
-            <div className="max-w-[280px] truncate text-xs text-mist-400">{record.tagline}</div>
+            <div className="max-w-70 truncate text-xs text-mist-400">{record.tagline}</div>
           </div>
         </div>
       ),
@@ -188,7 +188,7 @@ export default function ServicesPage() {
           placeholder="Search services…"
           value={search}
           onChange={setSearch}
-          className="!w-56"
+          className="w-56!"
         />
         <Button type="primary" icon={<PlusOutlined />} className="btn-gradient border-0!" onClick={openCreate}>
           New service
