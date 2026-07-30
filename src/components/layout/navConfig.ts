@@ -3,6 +3,7 @@ import {
   AppstoreOutlined,
   TeamOutlined,
   ShopOutlined,
+  ShoppingOutlined,
   CrownOutlined,
   MessageOutlined,
   FileSearchOutlined,
@@ -72,7 +73,26 @@ export const NAV_ITEMS: NavItem[] = [
   //     { key: "ifundayiti-donations", label: "Donations", path: "/ifundayiti/donations", icon: DollarOutlined },
   //   ],
   // },
-  { key: "store", label: "Store", path: "/store", icon: ShopOutlined },
+  {
+    key: "store",
+    label: "Store",
+    path: "/store",
+    icon: ShopOutlined,
+    children: [
+      {
+        key: "store-catalog",
+        label: "Catalog",
+        path: "/store",
+        icon: ShopOutlined,
+      },
+      {
+        key: "store-orders",
+        label: "Manage orders",
+        path: "/store/orders",
+        icon: ShoppingOutlined,
+      },
+    ],
+  },
   {
     key: "membership",
     label: "Membership",

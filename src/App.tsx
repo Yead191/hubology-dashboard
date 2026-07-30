@@ -13,6 +13,7 @@ const ServiceBookingsPage = lazy(() => import("@/features/services/ServiceBookin
 const VendorsPage = lazy(() => import("@/features/vendors/VendorsPage"));
 const UsersPage = lazy(() => import("@/features/users/UsersPage"));
 const StorePage = lazy(() => import("@/features/store/StorePage"));
+const OrdersPage = lazy(() => import("@/features/orders/OrdersPage"));
 const MembershipPage = lazy(() => import("@/features/membership/MembershipPage"));
 const ForumModerationPage = lazy(() => import("@/features/forum/ForumModerationPage"));
 const IFundAyitiOverviewPage = lazy(() => import("@/features/ifundayiti/IFundAyitiOverviewPage"));
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="vendors" element={<VendorsPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="store" element={<StorePage />} />
+            <Route path="store/orders" element={<OrdersPage />} />
             <Route path="membership" element={<MembershipPage />} />
             <Route path="forum" element={<ForumModerationPage />} />
             <Route path="ifundayiti" element={<IFundAyitiOverviewPage />} />
