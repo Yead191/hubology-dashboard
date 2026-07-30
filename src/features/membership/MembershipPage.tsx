@@ -1,133 +1,372 @@
-import { useState } from "react";
-import { Button, Popconfirm, Switch, Tooltip } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined } from "@ant-design/icons";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Badge, Button, Skeleton, Tabs, Tooltip } from "antd";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  CheckOutlined,
+  CrownOutlined,
+  TeamOutlined,
+  UserOutlined,
+  EyeOutlined,
+  StarFilled,
+} from "@ant-design/icons";
 import { toast } from "sonner";
-import { PageToolbar } from "@/components/ui/PageToolbar";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { StatusTag } from "@/components/ui/StatusTag";
+import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
+import { useConfirmDelete } from "@/hooks/useConfirmDelete";
 import { cn, formatCurrency } from "@/lib/utils";
-import { useMembership } from "./MembershipContext";
-import { MembershipFormModal } from "./components/MembershipFormModal";
-import type { MembershipPlan } from "./types";
+import {
+  useCreateMembershipMutation,
+  useDeleteMembershipMutation,
+  useGetMembershipsQuery,
+  useUpdateMembershipMutation,
+} from "@/redux/features/membership/membershipApi";
+import type {
+  ApiMembership,
+  MembershipFormPayload,
+  MembershipRecurring,
+  MembershipType,
+} from "@/redux/features/membership/membership.types";
+import { membershipTypeLabelMap, recurringLabelMap } from "./statusMaps";
+import { BillingSegmented, MembershipFormModal } from "./components/MembershipFormModal";
+
+function getErrorMessage(error: unknown) {
+  if (typeof error === "object" && error !== null) {
+    const err = error as { data?: { message?: string }; message?: string };
+    return err.data?.message ?? err.message ?? "Something went wrong. Please try again.";
+  }
+  return "Something went wrong. Please try again.";
+}
+
+function useTypeCount(type: MembershipType) {
+  const { data } = useGetMembershipsQuery({ page: 1, limit: 1, type });
+  return data?.pagination?.total ?? 0;
+}
 
 export default function MembershipPage() {
-  const { plans, addPlan, updatePlan, removePlan } = useMembership();
-  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+  const [activeType, setActiveType] = useState<MembershipType>("user");
+  const [billing, setBilling] = useState<MembershipRecurring | "all">("all");
   const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState<MembershipPlan | null>(null);
+  const [editing, setEditing] = useState<ApiMembership | null>(null);
+
+  const userCount = useTypeCount("user");
+  const vendorCount = useTypeCount("vendor");
+
+  const { data, isFetching, isLoading } = useGetMembershipsQuery({
+    page: 1,
+    limit: 50,
+    type: activeType,
+    recurring: billing === "all" ? undefined : billing,
+  });
+
+  const [createPlan, { isLoading: isCreating }] = useCreateMembershipMutation();
+  const [updatePlan, { isLoading: isUpdating }] = useUpdateMembershipMutation();
+  const [deletePlan] = useDeleteMembershipMutation();
+
+  const plans = data?.data ?? [];
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setEditing(null);
+    setFormOpen(false);
+  }, [activeType]);
+
+  const deleteFlow = useConfirmDelete<ApiMembership>(async (record) => {
+    const promise = deletePlan(record._id).unwrap();
+    toast.promise(promise, {
+      loading: `Removing ${record.name}…`,
+      success: `"${record.name}" is no longer offered.`,
+      error: (err) => getErrorMessage(err),
+    });
+    await promise.catch(() => undefined);
+  });
 
   const openCreate = () => {
     setEditing(null);
     setFormOpen(true);
   };
-  const openEdit = (plan: MembershipPlan) => {
+
+  const openEdit = (plan: ApiMembership) => {
     setEditing(plan);
     setFormOpen(true);
   };
 
-  const handleSubmit = (input: Parameters<typeof addPlan>[0]) => {
-    if (editing) {
-      updatePlan(editing.id, input);
-      toast.success("Plan updated", { description: `"${input.name}" has been saved.` });
-    } else {
-      addPlan(input);
-      toast.success("Plan created", { description: `"${input.name}" is now available on the membership page.` });
+  const handleSubmit = async (payload: MembershipFormPayload) => {
+    try {
+      if (editing) {
+        await updatePlan({ id: editing._id, body: payload }).unwrap();
+        toast.success("Plan updated", { description: `"${payload.name}" has been saved.` });
+      } else {
+        await createPlan(payload).unwrap();
+        toast.success("Plan created", {
+          description: `"${payload.name}" is now available for ${membershipTypeLabelMap[payload.type].toLowerCase()}s.`,
+        });
+      }
+      setFormOpen(false);
+      setEditing(null);
+    } catch (error) {
+      toast.error(editing ? "Couldn't update plan" : "Couldn't create plan", {
+        description: getErrorMessage(error),
+      });
     }
-    setFormOpen(false);
-  };
-
-  const handleDelete = (plan: MembershipPlan) => {
-    removePlan(plan.id);
-    toast.success("Plan removed", { description: `"${plan.name}" is no longer offered.` });
   };
 
   return (
     <div>
-      <PageToolbar eyebrow="Membership plans" count={plans.length}>
-        <div className="flex items-center gap-2 text-sm text-mist-400">
-          Monthly
-          <Switch checked={billing === "yearly"} onChange={(v) => setBilling(v ? "yearly" : "monthly")} />
-          Yearly
-        </div>
-        <Button type="primary" icon={<PlusOutlined />} className="btn-gradient !border-0" onClick={openCreate}>
-          New plan
-        </Button>
-      </PageToolbar>
+      <div className="aurora-field glass-panel mb-6 overflow-hidden p-6 md:p-7">
+        <div className="relative flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div className="pointer-events-none absolute -right-8 -top-16 h-44 w-44 rounded-full bg-warning/15 blur-[60px]" />
+          <div className="pointer-events-none absolute -bottom-20 left-1/3 h-36 w-36 rounded-full bg-violet-600/25 blur-[50px]" />
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {plans.map((plan) => (
-          <div
-            key={plan.id}
-            className={cn(
-              "glass-panel relative flex flex-col p-6",
-              plan.featured && "aurora-field ring-1 ring-violet-600/40"
-            )}
-          >
-            {plan.highlight && (
-              <span className="btn-gradient absolute -top-3 left-6 rounded-full px-3 py-1 text-[11px] font-semibold text-white">
-                {plan.highlight}
-              </span>
-            )}
-
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="font-display text-lg font-semibold text-cloud-100">{plan.name}</h3>
-                <p className="mt-1 text-sm text-mist-400">{plan.tagline}</p>
-              </div>
-              <div className="flex gap-1">
-                <Tooltip title="Edit">
-                  <Button type="text" size="small" icon={<EditOutlined />} onClick={() => openEdit(plan)} />
-                </Tooltip>
-                <Popconfirm
-                  title={`Remove "${plan.name}"?`}
-                  description="This plan will no longer be offered to members."
-                  okText="Remove"
-                  okButtonProps={{ danger: true }}
-                  onConfirm={() => handleDelete(plan)}
-                >
-                  <Tooltip title="Delete">
-                    <Button type="text" size="small" danger icon={<DeleteOutlined />} />
-                  </Tooltip>
-                </Popconfirm>
-              </div>
+          <div className="relative flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-warning to-[#c47d12] shadow-[0_8px_24px_-8px_rgba(245,181,68,0.65)]">
+              <CrownOutlined className="text-lg text-navy-900" />
             </div>
-
-            <div className="mt-5 flex items-end gap-1">
-              <span className="font-display text-3xl font-bold text-cloud-100">
-                {formatCurrency(billing === "monthly" ? plan.priceMonthly : plan.priceYearly)}
-              </span>
-              <span className="pb-1 text-sm text-mist-400">/mo</span>
+            <div>
+              <h2 className="font-display text-xl font-semibold text-cloud-100">Membership plans</h2>
+              <p className="mt-1 max-w-xl text-sm text-mist-400">
+                Design premium tiers for members and vendors. Manage pricing, billing cadence, and
+                who sits under each plan.
+              </p>
             </div>
-            {billing === "yearly" && (
-              <span className="mt-1 text-xs text-success">Billed annually</span>
-            )}
-
-            <ul className="mt-5 flex-1 space-y-2.5">
-              {plan.features.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm text-mist-300">
-                  <CheckOutlined className="mt-0.5 text-[11px] text-violet-glow" />
-                  {f}
-                </li>
-              ))}
-            </ul>
           </div>
-        ))}
 
-        <button
-          type="button"
-          onClick={openCreate}
-          className="flex min-h-[280px] flex-col items-center justify-center gap-2 rounded-[20px] border border-dashed border-navy-600/70 text-mist-400 transition hover:border-violet-600/50 hover:text-cloud-100"
-        >
-          <PlusOutlined className="text-xl" />
-          <span className="text-sm font-medium">Add a new plan</span>
-        </button>
+          <div className="relative flex gap-2">
+            <div className="rounded-2xl border border-violet-600/25 bg-violet-600/10 px-4 py-3 text-sm">
+              <div className="font-semibold text-violet-glow">{userCount} user</div>
+              <div className="text-xs text-mist-400">Member plans</div>
+            </div>
+            <div className="rounded-2xl border border-info/25 bg-info/10 px-4 py-3 text-sm">
+              <div className="font-semibold text-info">{vendorCount} vendor</div>
+              <div className="text-xs text-mist-400">Partner plans</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <GlassCard flat className="mt-6 !p-4 text-xs text-mist-600">
-        Pricing shown reflects the monthly-vs-yearly toggle above — this only changes what's previewed here, it
-        doesn't affect live plans until you edit them.
+      <GlassCard flat padded={false}>
+        <div className="flex flex-col gap-3 border-b border-navy-700/60 px-4 pt-2 md:flex-row md:items-center md:justify-between md:px-5">
+          <Tabs
+            activeKey={activeType}
+            onChange={(key) => setActiveType(key as MembershipType)}
+            className="mb-0!"
+            items={[
+              {
+                key: "user",
+                label: (
+                  <span className="flex items-center gap-2">
+                    <UserOutlined />
+                    User membership
+                    <Badge
+                      count={userCount}
+                      showZero
+                      overflowCount={999}
+                      style={{
+                        backgroundColor: activeType === "user" ? "#8131F0" : "#23274f",
+                        color: activeType === "user" ? "#fff" : "#9ca3c9",
+                        boxShadow: "none",
+                      }}
+                    />
+                  </span>
+                ),
+              },
+              {
+                key: "vendor",
+                label: (
+                  <span className="flex items-center gap-2">
+                    <TeamOutlined />
+                    Vendor membership
+                    <Badge
+                      count={vendorCount}
+                      showZero
+                      overflowCount={999}
+                      style={{
+                        backgroundColor: activeType === "vendor" ? "#8131F0" : "#23274f",
+                        color: activeType === "vendor" ? "#fff" : "#9ca3c9",
+                        boxShadow: "none",
+                      }}
+                    />
+                  </span>
+                ),
+              },
+            ]}
+          />
+        </div>
+
+        <div className="flex flex-col gap-3 border-b border-navy-700/60 p-4 sm:flex-row sm:items-center sm:justify-between md:px-5">
+          <BillingSegmented value={billing} onChange={setBilling} />
+          <Button type="primary" icon={<PlusOutlined />} className="btn-gradient border-0!" onClick={openCreate}>
+            New {activeType} plan
+          </Button>
+        </div>
+
+        <div className="p-4 md:p-5">
+          {isLoading ? (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="rounded-2xl border border-navy-700/60 bg-navy-800/30 p-6">
+                  <Skeleton active paragraph={{ rows: 6 }} />
+                </div>
+              ))}
+            </div>
+          ) : !isFetching && plans.length === 0 ? (
+            <EmptyState
+              icon={<CrownOutlined />}
+              title={`No ${activeType} plans yet`}
+              description={`Create the first ${activeType} membership tier to offer on the platform.`}
+              actionLabel={`New ${activeType} plan`}
+              onAction={openCreate}
+            />
+          ) : (
+            <div
+              className={cn(
+                "grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3",
+                isFetching && "opacity-70 transition-opacity"
+              )}
+            >
+              {plans.map((plan) => (
+                <PlanCard
+                  key={plan._id}
+                  plan={plan}
+                  onEdit={() => openEdit(plan)}
+                  onDelete={() => deleteFlow.request(plan)}
+                  onViewSubscribers={() => navigate(`/membership/${plan._id}/subscribers`)}
+                />
+              ))}
+
+              <button
+                type="button"
+                onClick={openCreate}
+                className="group flex min-h-80 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-navy-600/70 bg-navy-800/20 text-mist-400 transition hover:border-violet-600/45 hover:bg-violet-600/5 hover:text-cloud-100"
+              >
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-navy-600/60 bg-navy-800/50 text-lg transition group-hover:border-violet-600/40 group-hover:text-violet-glow">
+                  <PlusOutlined />
+                </span>
+                <span className="text-sm font-medium">Add a new {activeType} plan</span>
+              </button>
+            </div>
+          )}
+        </div>
       </GlassCard>
 
-      <MembershipFormModal open={formOpen} initial={editing} onCancel={() => setFormOpen(false)} onSubmit={handleSubmit} />
+      <MembershipFormModal
+        open={formOpen}
+        type={activeType}
+        initial={editing}
+        loading={isCreating || isUpdating}
+        onCancel={() => {
+          if (isCreating || isUpdating) return;
+          setFormOpen(false);
+          setEditing(null);
+        }}
+        onSubmit={handleSubmit}
+      />
+
+      <ConfirmDeleteModal
+        open={deleteFlow.isOpen}
+        title={`Delete "${deleteFlow.target?.name}"?`}
+        description="This plan will no longer be offered. Existing subscribers are not automatically cancelled."
+        confirmLabel="Delete plan"
+        loading={deleteFlow.loading}
+        onConfirm={deleteFlow.confirm}
+        onCancel={deleteFlow.cancel}
+      />
     </div>
+  );
+}
+
+function PlanCard({
+  plan,
+  onEdit,
+  onDelete,
+  onViewSubscribers,
+}: {
+  plan: ApiMembership;
+  onEdit: () => void;
+  onDelete: () => void;
+  onViewSubscribers: () => void;
+}) {
+  return (
+    <article
+      className={cn(
+        "group relative flex flex-col overflow-hidden rounded-2xl border bg-linear-to-b from-[#171b3a] to-[#10132c] p-6 shadow-[0_16px_40px_-28px_rgba(0,0,0,0.85)] transition duration-300 hover:-translate-y-0.5",
+        plan.featured
+          ? "border-warning/35 shadow-[0_24px_50px_-24px_rgba(245,181,68,0.35)]"
+          : "border-navy-700/70 hover:border-violet-600/35"
+      )}
+    >
+      {plan.featured && (
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(245,181,68,0.12),transparent_55%)]" />
+      )}
+
+      {(plan.highlight || plan.featured) && (
+        <div className="relative mb-3">
+          <span className="inline-flex items-center gap-1 rounded-full bg-linear-to-r from-warning to-[#c47d12] px-3 py-1 text-[11px] font-semibold text-navy-900 shadow-lg">
+            {plan.featured && <StarFilled className="text-[10px]" />}
+            {plan.highlight || "Featured"}
+          </span>
+        </div>
+      )}
+
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <h3 className="font-display text-lg font-semibold tracking-tight text-cloud-100">{plan.name}</h3>
+            <StatusTag tone={plan.type === "user" ? "violet" : "info"}>
+              {membershipTypeLabelMap[plan.type]}
+            </StatusTag>
+          </div>
+          <p className="mt-1.5 text-sm leading-relaxed text-mist-400">{plan.tagline}</p>
+        </div>
+        <div className="flex shrink-0 gap-0.5 opacity-80 transition group-hover:opacity-100">
+          <Tooltip title="Edit">
+            <Button type="text" size="small" icon={<EditOutlined />} onClick={onEdit} />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button type="text" size="small" danger icon={<DeleteOutlined />} onClick={onDelete} />
+          </Tooltip>
+        </div>
+      </div>
+
+      <div className="relative mt-5 flex items-end gap-1.5">
+        <span className="font-display text-4xl font-bold tracking-tight text-cloud-100">
+          {formatCurrency(plan.price)}
+        </span>
+        <span className="pb-1.5 text-sm text-mist-400">
+          /{plan.recurring === "year" ? "yr" : "mo"}
+        </span>
+      </div>
+      <div className="relative mt-1 text-xs text-mist-500">
+        {recurringLabelMap[plan.recurring]}
+        {plan.interval > 1 ? ` · every ${plan.interval} ${plan.recurring}s` : ""}
+      </div>
+
+      <ul className="relative mt-5 flex-1 space-y-2.5">
+        {plan.features.map((feature) => (
+          <li key={feature} className="flex items-start gap-2.5 text-sm text-mist-300">
+            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-violet-600/20 text-[9px] text-violet-glow">
+              <CheckOutlined />
+            </span>
+            {feature}
+          </li>
+        ))}
+      </ul>
+
+      <div className="relative mt-6 border-t border-navy-700/60 pt-4">
+        <Button
+          type="primary"
+          icon={<EyeOutlined />}
+          className="btn-gradient border-0!"
+          block
+          onClick={onViewSubscribers}
+        >
+          View subscribers
+        </Button>
+      </div>
+    </article>
   );
 }

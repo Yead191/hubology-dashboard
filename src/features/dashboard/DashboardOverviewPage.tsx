@@ -11,24 +11,30 @@ import { Avatar, Button, Skeleton } from "antd";
 import { StatCard } from "@/components/ui/StatCard";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusTag } from "@/components/ui/StatusTag";
-import { useMembership } from "@/features/membership/MembershipContext";
 import { useForum } from "@/features/forum/ForumContext";
-import { formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { toFileUrl } from "@/config";
 import { useGetProfileQuery } from "@/redux/features/auth/authApi";
 import { useGetDashboardOverviewQuery } from "@/redux/features/dashboard/dashboardApi";
 import { useGetVendorsQuery } from "@/redux/features/vendors/vendorsApi";
+import { useGetMembershipsQuery } from "@/redux/features/membership/membershipApi";
 
 export default function DashboardOverviewPage() {
   const { data: profile } = useGetProfileQuery({});
   const { data: dashboardRes, isLoading: isDashboardLoading } = useGetDashboardOverviewQuery();
   const { data: pendingVendorsRes } = useGetVendorsQuery({ status: "pending", page: 1, limit: 3 });
+  const { data: membershipRes } = useGetMembershipsQuery({
+    page: 1,
+    limit: 5,
+    type: "user",
+    recurring: "month",
+  });
   const navigate = useNavigate();
-  const { plans } = useMembership();
   const { posts } = useForum();
 
   const stats = dashboardRes?.data;
   const pendingVendors = pendingVendorsRes?.data ?? [];
+  const plans = membershipRes?.data ?? [];
   const reportedPosts = posts.filter((p) => p.status === "reported");
 
   const firstName = profile?.data?.name.split(" ")[0] ?? "there";
@@ -168,23 +174,27 @@ export default function DashboardOverviewPage() {
             </Button>
           </div>
           <div className="space-y-2.5">
-            {plans.map((plan) => (
-              <div
-                key={plan.id}
-                className="flex items-center justify-between rounded-xl border border-navy-700/60 bg-navy-800/40 p-3"
-              >
-                <div>
-                  <div className="flex items-center gap-1.5 text-sm font-medium text-cloud-100">
-                    {plan.name}
-                    {plan.featured && <StatusTag tone="violet">Featured</StatusTag>}
+            {plans.length === 0 ? (
+              <p className="text-sm text-mist-500">No membership plans yet.</p>
+            ) : (
+              plans.map((plan) => (
+                <div
+                  key={plan._id}
+                  className="flex items-center justify-between rounded-xl border border-navy-700/60 bg-navy-800/40 p-3"
+                >
+                  <div>
+                    <div className="flex items-center gap-1.5 text-sm font-medium text-cloud-100">
+                      {plan.name}
+                      {plan.featured && <StatusTag tone="violet">Featured</StatusTag>}
+                    </div>
+                    <div className="text-xs text-mist-400">{plan.tagline}</div>
                   </div>
-                  <div className="text-xs text-mist-400">{plan.tagline}</div>
+                  <div className="font-display text-sm font-semibold text-cloud-100">
+                    {formatCurrency(plan.price)}/{plan.recurring === "year" ? "yr" : "mo"}
+                  </div>
                 </div>
-                <div className="font-display text-sm font-semibold text-cloud-100">
-                  ${plan.priceMonthly}/mo
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </GlassCard>
       </div>

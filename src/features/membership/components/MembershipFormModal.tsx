@@ -1,13 +1,19 @@
 import { useEffect } from "react";
-import { Modal, Form, Input, InputNumber, Switch, Button } from "antd";
+import { Modal, Form, Input, InputNumber, Switch, Button, Select, Segmented } from "antd";
 import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
-import type { MembershipPlan, MembershipPlanInput } from "../types";
+import type {
+  ApiMembership,
+  MembershipFormPayload,
+  MembershipRecurring,
+  MembershipType,
+} from "@/redux/features/membership/membership.types";
 
-interface MembershipFormValues {
+interface FormValues {
   name: string;
   tagline: string;
-  priceMonthly: number;
-  priceYearly: number;
+  price: number;
+  recurring: MembershipRecurring;
+  interval_count: number;
   featured: boolean;
   highlight: string;
   features: string[];
@@ -15,16 +21,20 @@ interface MembershipFormValues {
 
 export function MembershipFormModal({
   open,
+  type,
   initial,
+  loading,
   onCancel,
   onSubmit,
 }: {
   open: boolean;
-  initial?: MembershipPlan | null;
+  type: MembershipType;
+  initial?: ApiMembership | null;
+  loading?: boolean;
   onCancel: () => void;
-  onSubmit: (input: MembershipPlanInput) => void;
+  onSubmit: (payload: MembershipFormPayload) => void;
 }) {
-  const [form] = Form.useForm<MembershipFormValues>();
+  const [form] = Form.useForm<FormValues>();
   const isEdit = !!initial;
 
   useEffect(() => {
@@ -33,28 +43,36 @@ export function MembershipFormModal({
       form.setFieldsValue({
         name: initial.name,
         tagline: initial.tagline,
-        priceMonthly: initial.priceMonthly,
-        priceYearly: initial.priceYearly,
+        price: initial.price,
+        recurring: initial.recurring,
+        interval_count: initial.interval ?? 1,
         featured: initial.featured,
-        highlight: initial.highlight,
-        features: initial.features,
+        highlight: initial.highlight ?? "",
+        features: initial.features?.length ? initial.features : [""],
       });
     } else {
       form.resetFields();
-      form.setFieldsValue({ featured: false, features: [""] });
+      form.setFieldsValue({
+        recurring: "month",
+        interval_count: 1,
+        featured: false,
+        highlight: "",
+        features: [""],
+      });
     }
   }, [open, initial, form]);
 
-  const handleFinish = (values: MembershipFormValues) => {
-    const features = values.features.map((f) => f.trim()).filter(Boolean);
+  const handleFinish = (values: FormValues) => {
     onSubmit({
       name: values.name.trim(),
       tagline: values.tagline.trim(),
-      priceMonthly: values.priceMonthly,
-      priceYearly: values.priceYearly,
+      price: values.price,
+      recurring: values.recurring,
+      interval_count: values.interval_count ?? 1,
       featured: values.featured,
-      highlight: values.highlight?.trim() || "",
-      features: features.length ? features : ["Feature detail"],
+      highlight: values.highlight?.trim() ?? "",
+      type,
+      features: values.features.map((f) => f.trim()).filter(Boolean),
     });
   };
 
@@ -62,34 +80,43 @@ export function MembershipFormModal({
     <Modal
       open={open}
       onCancel={onCancel}
-      title={isEdit ? "Edit membership plan" : "New membership plan"}
-      width={560}
+      title={isEdit ? `Edit ${type} plan` : `New ${type} plan`}
+      width={600}
       footer={null}
       destroyOnHidden
+      maskClosable={!loading}
     >
       <Form form={form} layout="vertical" requiredMark={false} onFinish={handleFinish} className="mt-2">
         <Form.Item label="Plan name" name="name" rules={[{ required: true, message: "Enter a plan name" }]}>
-          <Input placeholder="Pro" />
+          <Input placeholder="ELITE" />
         </Form.Item>
 
         <Form.Item label="Tagline" name="tagline" rules={[{ required: true, message: "Add a tagline" }]}>
-          <Input placeholder="For teams ready to move faster." />
+          <Input placeholder="For scaling business that want it all." />
         </Form.Item>
 
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
-          <Form.Item label="Monthly price ($)" name="priceMonthly" rules={[{ required: true, message: "Enter a price" }]}>
-            <InputNumber min={0} className="!w-full" placeholder="49" />
+        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-3">
+          <Form.Item label="Price ($)" name="price" rules={[{ required: true, message: "Enter a price" }]}>
+            <InputNumber min={0} className="w-full!" prefix="$" placeholder="99" />
           </Form.Item>
-          <Form.Item label="Yearly price ($/mo billed annually)" name="priceYearly" rules={[{ required: true, message: "Enter a price" }]}>
-            <InputNumber min={0} className="!w-full" placeholder="39" />
+          <Form.Item label="Billing" name="recurring" rules={[{ required: true }]}>
+            <Select
+              options={[
+                { label: "Monthly", value: "month" },
+                { label: "Yearly", value: "year" },
+              ]}
+            />
+          </Form.Item>
+          <Form.Item label="Interval" name="interval_count" rules={[{ required: true, message: "Enter interval" }]}>
+            <InputNumber min={1} className="w-full!" placeholder="1" />
           </Form.Item>
         </div>
 
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-[1fr_auto] sm:items-end">
           <Form.Item label="Highlight badge (optional)" name="highlight">
-            <Input placeholder="Most popular" />
+            <Input placeholder="Most Popular" />
           </Form.Item>
-          <Form.Item label="Featured plan" name="featured" valuePropName="checked">
+          <Form.Item label="Featured" name="featured" valuePropName="checked">
             <Switch />
           </Form.Item>
         </div>
@@ -103,10 +130,10 @@ export function MembershipFormModal({
                   <div key={field.key} className="flex items-center gap-2">
                     <Form.Item
                       {...field}
-                      className="!mb-0 flex-1"
+                      className="mb-0! flex-1!"
                       rules={[{ required: true, message: "Feature can't be empty" }]}
                     >
-                      <Input placeholder="Priority forum support from experts" />
+                      <Input placeholder="Priority customer support" />
                     </Form.Item>
                     <button
                       type="button"
@@ -123,7 +150,7 @@ export function MembershipFormModal({
                 type="dashed"
                 onClick={() => add("")}
                 icon={<PlusOutlined />}
-                className="!mt-2.5 !border-navy-600 !text-mist-400"
+                className="mt-2.5! border-navy-600! text-mist-400!"
                 block
               >
                 Add feature
@@ -133,12 +160,35 @@ export function MembershipFormModal({
         </Form.List>
 
         <div className="mt-6 flex justify-end gap-2 border-t border-navy-700/60 pt-4">
-          <Button onClick={onCancel}>Cancel</Button>
-          <Button type="primary" htmlType="submit" className="btn-gradient !border-0">
+          <Button onClick={onCancel} disabled={loading}>
+            Cancel
+          </Button>
+          <Button type="primary" htmlType="submit" loading={loading} className="btn-gradient border-0!">
             {isEdit ? "Save changes" : "Create plan"}
           </Button>
         </div>
       </Form>
     </Modal>
+  );
+}
+
+/** Compact billing toggle used on the catalog page. */
+export function BillingSegmented({
+  value,
+  onChange,
+}: {
+  value: MembershipRecurring | "all";
+  onChange: (value: MembershipRecurring | "all") => void;
+}) {
+  return (
+    <Segmented
+      value={value}
+      onChange={(v) => onChange(v as MembershipRecurring | "all")}
+      options={[
+        { label: "All", value: "all" },
+        { label: "Monthly", value: "month" },
+        { label: "Yearly", value: "year" },
+      ]}
+    />
   );
 }
