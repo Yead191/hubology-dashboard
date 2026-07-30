@@ -1,4 +1,19 @@
 export type UserAccountStatus = "active" | "blocked";
+export type UserSubscriptionStatus = "active" | "expired" | "cancelled" | "pending";
+
+export interface UserSubscription {
+  _id: string;
+  user: string;
+  name: string;
+  plan: string;
+  /** Backend field spelling — kept as-is to match the API payload. */
+  recuring: string;
+  status: UserSubscriptionStatus | string;
+  start_date: string;
+  end_date: string;
+  price: number;
+  features: string[];
+}
 
 export interface ApiUser {
   _id: string;
@@ -10,6 +25,7 @@ export interface ApiUser {
   verified: boolean;
   interest: string;
   company: string;
+  subscription?: UserSubscription | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -26,6 +42,8 @@ export interface GetUsersParams {
   limit?: number;
   searchTerm?: string;
   status?: UserAccountStatus | "";
+  /** When true, only users with an active/any subscription are returned. */
+  hasSubscription?: boolean;
 }
 
 export interface UsersListResponse {

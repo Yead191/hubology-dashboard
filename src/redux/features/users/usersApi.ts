@@ -17,6 +17,7 @@ export const usersApi = baseApi.injectEndpoints({
           limit: params?.limit ?? 10,
           searchTerm: params?.searchTerm ?? "",
           ...(params?.status ? { status: params.status } : {}),
+          ...(params?.hasSubscription ? { hasSubscription: true } : {}),
         },
       }),
       providesTags: (result) =>

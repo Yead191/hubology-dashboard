@@ -20,3 +20,10 @@ export const userStatusDotClassMap: Record<UserAccountStatus, string> = {
   active: "bg-success",
   blocked: "bg-danger",
 };
+
+export const subscriptionStatusToneMap: Record<string, StatusTone> = {
+  active: "success",
+  expired: "warning",
+  cancelled: "danger",
+  pending: "info",
+};

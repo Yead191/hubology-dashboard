@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Avatar, Badge, Button, Table, Tabs, Tooltip, type TableProps } from "antd";
+import { Avatar, Badge, Button, Segmented, Table, Tabs, Tooltip, type TableProps } from "antd";
 import {
   UserOutlined,
   EyeOutlined,
   DeleteOutlined,
   TeamOutlined,
   CheckCircleFilled,
+  CrownOutlined,
 } from "@ant-design/icons";
 import { toast } from "sonner";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -15,7 +16,7 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
 import { useConfirmDelete } from "@/hooks/useConfirmDelete";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { getImageUrl } from "@/lib/getImageUrl";
 import {
   useChangeUserStatusMutation,
@@ -28,6 +29,7 @@ import {
   type UserAccountStatus,
 } from "@/redux/features/users/users.types";
 import {
+  subscriptionStatusToneMap,
   userStatusDotClassMap,
   userStatusLabelMap,
 } from "./statusMaps";
@@ -35,6 +37,7 @@ import { UserProfileModal } from "./components/UserProfileModal";
 import { UserStatusSelect } from "./components/UserStatusSelect";
 
 type StatusTab = UserAccountStatus | "all";
+type SubscriptionFilter = "all" | "subscribers";
 
 function getErrorMessage(error: unknown) {
   if (typeof error === "object" && error !== null) {
@@ -52,13 +55,16 @@ function useStatusCount(status?: UserAccountStatus) {
 export default function UsersPage() {
   const { value: search, setValue: setSearch, debouncedValue: searchTerm } = useDebouncedSearch();
   const [statusTab, setStatusTab] = useState<StatusTab>("all");
+  const [subscriptionFilter, setSubscriptionFilter] = useState<SubscriptionFilter>("all");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [viewing, setViewing] = useState<ApiUser | null>(null);
 
+  const hasSubscription = subscriptionFilter === "subscribers";
+
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, statusTab]);
+  }, [searchTerm, statusTab, subscriptionFilter]);
 
   const allCount = useStatusCount();
   const activeCount = useStatusCount("active");
@@ -75,6 +81,7 @@ export default function UsersPage() {
     limit,
     searchTerm,
     status: statusTab === "all" ? undefined : statusTab,
+    hasSubscription: hasSubscription || undefined,
   });
 
   const [changeStatus, { isLoading: isChangingStatus }] = useChangeUserStatusMutation();
@@ -163,6 +170,35 @@ export default function UsersPage() {
         ) : (
           <span className="text-mist-600">—</span>
         ),
+    },
+    {
+      title: "Subscription",
+      key: "subscription",
+      responsive: ["md"],
+      render: (_, record) => {
+        const sub = record.subscription;
+        if (!sub) {
+          return <span className="text-mist-600">—</span>;
+        }
+        return (
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <StatusTag tone="gold" icon={<CrownOutlined />}>
+                {sub.name}
+              </StatusTag>
+              <StatusTag tone={subscriptionStatusToneMap[sub.status] ?? "neutral"}>
+                {sub.status}
+              </StatusTag>
+            </div>
+            <div className="mt-1 text-xs text-mist-400">
+              {formatCurrency(sub.price)}
+              <span className="text-mist-600">/{sub.recuring}</span>
+              <span className="mx-1 text-mist-700">·</span>
+              ends {formatDate(sub.end_date)}
+            </div>
+          </div>
+        );
+      },
     },
     {
       title: "Joined",
@@ -267,12 +303,28 @@ export default function UsersPage() {
           />
         </div>
 
-        <div className="flex flex-col gap-2.5 border-t border-navy-700/60 p-4 sm:flex-row sm:items-center md:px-5">
+        <div className="flex flex-col gap-2.5 border-t border-navy-700/60 p-4 sm:flex-row sm:flex-wrap sm:items-center md:px-5">
           <SearchInput
             placeholder="Search by name, email, company…"
             value={search}
             onChange={setSearch}
             className="sm:!w-72"
+          />
+          <Segmented
+            value={subscriptionFilter}
+            onChange={(value) => setSubscriptionFilter(value as SubscriptionFilter)}
+            options={[
+              { label: "All members", value: "all" },
+              {
+                label: (
+                  <span className="inline-flex items-center gap-1.5">
+                    <CrownOutlined />
+                    Has subscription
+                  </span>
+                ),
+                value: "subscribers",
+              },
+            ]}
           />
           <div className="text-xs text-mist-600 sm:ml-auto">
             {pagination?.total ?? 0} user{(pagination?.total ?? 0) === 1 ? "" : "s"}
@@ -285,7 +337,7 @@ export default function UsersPage() {
           <EmptyState
             icon={<UserOutlined />}
             title="No users in this view"
-            description="Try another status tab or clear your search."
+            description="Try another status tab, clear the subscription filter, or adjust your search."
           />
         ) : (
           <Table
