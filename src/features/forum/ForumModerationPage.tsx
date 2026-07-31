@@ -37,7 +37,7 @@ function useStatusCount(status?: PostStatus) {
 export default function ForumModerationPage() {
   const navigate = useNavigate();
   const { value: search, setValue: setSearch, debouncedValue: searchTerm } = useDebouncedSearch();
-  const [statusTab, setStatusTab] = useState<StatusTab>("reported");
+  const [statusTab, setStatusTab] = useState<StatusTab>("all");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 

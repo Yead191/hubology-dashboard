@@ -17,7 +17,10 @@ import {
 import { StatusTag } from "@/components/ui/StatusTag";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { toFileUrl } from "@/config";
-import type { ApiVendor, VendorAccountStatus } from "@/redux/features/vendors/vendors.types";
+import type {
+  ApiVendor,
+  VendorAccountStatus,
+} from "@/redux/features/vendors/vendors.types";
 import { subscriptionStatusToneMap } from "@/features/users/statusMaps";
 import { statusLabelMap, statusToneMap } from "../statusMaps";
 import { VendorStatusSelect } from "./VendorStatusSelect";
@@ -54,7 +57,7 @@ export function VendorProfileModal({
         body: { padding: 0 },
         container: {
           overflow: "hidden",
-          background: "linear-gradient(180deg, #151935 0%, #10132c 100%)",
+          background: "linear-linear(180deg, #151935 0%, #10132c 100%)",
           border: "1px solid rgba(255,255,255,0.08)",
           borderRadius: 20,
         },
@@ -69,12 +72,12 @@ export function VendorProfileModal({
 
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start">
           <div className="relative shrink-0">
-            <div className="rounded-2xl bg-gradient-to-br from-violet-600/50 to-violet-900/40 p-[2px] shadow-[0_12px_40px_-12px_rgba(129,49,240,0.65)]">
+            <div className="rounded-2xl bg-linear-to-br from-violet-600/50 to-violet-900/40 p-0.5 shadow-[0_12px_40px_-12px_rgba(129,49,240,0.65)]">
               <Avatar
                 src={toFileUrl(vendor.image)}
                 icon={<UserOutlined />}
                 size={88}
-                className="!rounded-[14px] !bg-navy-800"
+                className="rounded-[14px]! bg-navy-800!"
                 shape="square"
               />
             </div>
@@ -97,7 +100,9 @@ export function VendorProfileModal({
                 </p>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                <StatusTag tone={statusToneMap[vendor.status]}>{statusLabelMap[vendor.status]}</StatusTag>
+                <StatusTag tone={statusToneMap[vendor.status]}>
+                  {statusLabelMap[vendor.status]}
+                </StatusTag>
                 {subscription && (
                   <StatusTag tone="gold" icon={<CrownOutlined />}>
                     {subscription.name}
@@ -141,28 +146,42 @@ export function VendorProfileModal({
           <Metric
             icon={<DollarOutlined />}
             label="Hourly rate"
-            value={profile?.hourlyRate != null ? `${formatCurrency(profile.hourlyRate)}/hr` : "—"}
+            value={
+              profile?.hourlyRate != null
+                ? `${formatCurrency(profile.hourlyRate)}/hr`
+                : "—"
+            }
           />
           <Metric
             icon={<ClockCircleOutlined />}
             label="Availability"
             value={profile?.availability || "—"}
           />
-          <Metric icon={<BookOutlined />} label="Experience" value={profile?.yearsExperience || "—"} />
-          <Metric icon={<GlobalOutlined />} label="Interest" value={vendor.interest || "—"} />
+          <Metric
+            icon={<BookOutlined />}
+            label="Experience"
+            value={profile?.yearsExperience || "—"}
+          />
+          <Metric
+            icon={<GlobalOutlined />}
+            label="Interest"
+            value={vendor.interest || "—"}
+          />
         </div>
 
         {profile?.bio && (
           <Section title="About">
-            <p className="text-sm leading-relaxed text-mist-300">{profile.bio}</p>
+            <p className="text-sm leading-relaxed text-mist-300">
+              {profile.bio}
+            </p>
           </Section>
         )}
 
         {subscription ? (
-          <div className="mt-5 overflow-hidden rounded-2xl border border-[#f5b544]/25 bg-gradient-to-br from-[#f5b544]/10 to-transparent">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f5b544]/15 px-4 py-3.5">
+          <div className="mt-5 overflow-hidden rounded-2xl border border-warning/25 bg-linear-to-br from-warning/10 to-transparent">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-warning/15 px-4 py-3.5">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f5b544]/15 text-[#f5b544]">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-warning/15 text-warning">
                   <CrownOutlined />
                 </div>
                 <div>
@@ -175,12 +194,18 @@ export function VendorProfileModal({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <StatusTag tone={subscriptionStatusToneMap[subscription.status] ?? "neutral"}>
+                <StatusTag
+                  tone={
+                    subscriptionStatusToneMap[subscription.status] ?? "neutral"
+                  }
+                >
                   {subscription.status}
                 </StatusTag>
-                <span className="font-display text-base font-semibold text-[#f5b544]">
+                <span className="font-display text-base font-semibold text-warning">
                   {formatCurrency(subscription.price)}
-                  <span className="text-xs font-normal text-mist-400">/{subscription.recuring}</span>
+                  <span className="text-xs font-normal text-mist-400">
+                    /{subscription.recuring}
+                  </span>
                 </span>
               </div>
             </div>
@@ -190,20 +215,24 @@ export function VendorProfileModal({
                 <CalendarOutlined className="text-mist-600" />
                 <div>
                   <div className="text-[11px] text-mist-600">Starts</div>
-                  <div className="font-medium text-cloud-100">{formatDate(subscription.start_date)}</div>
+                  <div className="font-medium text-cloud-100">
+                    {formatDate(subscription.start_date)}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-mist-300">
                 <CalendarOutlined className="text-mist-600" />
                 <div>
                   <div className="text-[11px] text-mist-600">Ends</div>
-                  <div className="font-medium text-cloud-100">{formatDate(subscription.end_date)}</div>
+                  <div className="font-medium text-cloud-100">
+                    {formatDate(subscription.end_date)}
+                  </div>
                 </div>
               </div>
             </div>
 
             {!!subscription.features?.length && (
-              <div className="border-t border-[#f5b544]/15 px-4 py-3.5">
+              <div className="border-t border-warning/15 px-4 py-3.5">
                 <div className="mb-2 text-xs font-medium uppercase tracking-wide text-mist-600">
                   Plan features
                 </div>
@@ -220,7 +249,9 @@ export function VendorProfileModal({
         ) : (
           <div className="mt-5 rounded-2xl border border-dashed border-navy-600/70 px-4 py-5 text-center">
             <CrownOutlined className="text-lg text-mist-600" />
-            <p className="mt-2 text-sm text-mist-400">No subscription package on this account.</p>
+            <p className="mt-2 text-sm text-mist-400">
+              No subscription package on this account.
+            </p>
           </div>
         )}
 
@@ -229,7 +260,10 @@ export function VendorProfileModal({
             <div className="space-y-3 rounded-xl border border-navy-700/60 bg-navy-800/35 p-4 text-sm">
               <Field label="Degree" value={profile?.degree || "—"} />
               <Field label="Joined" value={formatDate(vendor.createdAt)} />
-              <Field label="Last updated" value={formatDate(vendor.updatedAt)} />
+              <Field
+                label="Last updated"
+                value={formatDate(vendor.updatedAt)}
+              />
             </div>
           </Section>
 
@@ -247,7 +281,9 @@ export function VendorProfileModal({
             )}
             {!!profile?.consultationTypes?.length && (
               <div className="mt-3">
-                <div className="mb-1.5 text-xs text-mist-600">Consultation types</div>
+                <div className="mb-1.5 text-xs text-mist-600">
+                  Consultation types
+                </div>
                 <div className="flex flex-wrap gap-1.5">
                   {profile.consultationTypes.map((c) => (
                     <StatusTag key={c} tone="neutral">
@@ -262,7 +298,9 @@ export function VendorProfileModal({
 
         {vendor.status === "rejected" && vendor.rejectionReason && (
           <div className="mt-5 rounded-xl border border-danger/25 bg-danger/10 p-4 text-sm text-danger">
-            <div className="mb-1 text-xs font-medium uppercase tracking-wide opacity-80">Rejection reason</div>
+            <div className="mb-1 text-xs font-medium uppercase tracking-wide opacity-80">
+              Rejection reason
+            </div>
             {vendor.rejectionReason}
           </div>
         )}
@@ -270,7 +308,9 @@ export function VendorProfileModal({
 
       <div className="flex flex-col gap-3 border-t border-navy-700/60 bg-navy-900/50 px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
         <div className="min-w-0 flex-1">
-          <div className="mb-1.5 text-xs font-medium uppercase tracking-wide text-mist-600">Account status</div>
+          <div className="mb-1.5 text-xs font-medium uppercase tracking-wide text-mist-600">
+            Account status
+          </div>
           <VendorStatusSelect
             size="middle"
             value={vendor.status}
@@ -280,7 +320,11 @@ export function VendorProfileModal({
         </div>
         <div className="flex gap-2 sm:shrink-0">
           <Button onClick={onClose}>Close</Button>
-          <Button danger icon={<DeleteOutlined />} onClick={() => onDelete(vendor)}>
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => onDelete(vendor)}
+          >
             Delete account
           </Button>
         </div>
@@ -289,14 +333,24 @@ export function VendorProfileModal({
   );
 }
 
-function Metric({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+function Metric({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+}) {
   return (
     <div className="rounded-xl border border-navy-700/60 bg-navy-800/40 p-3.5">
       <div className="flex items-center gap-1.5 text-xs text-mist-600">
         <span className="text-violet-glow/80">{icon}</span>
         {label}
       </div>
-      <div className="mt-1.5 truncate font-display text-sm font-semibold text-cloud-100">{value}</div>
+      <div className="mt-1.5 truncate font-display text-sm font-semibold text-cloud-100">
+        {value}
+      </div>
     </div>
   );
 }
@@ -304,7 +358,9 @@ function Metric({ icon, label, value }: { icon: ReactNode; label: string; value:
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="mt-5">
-      <div className="mb-2.5 text-xs font-medium uppercase tracking-wide text-mist-600">{title}</div>
+      <div className="mb-2.5 text-xs font-medium uppercase tracking-wide text-mist-600">
+        {title}
+      </div>
       {children}
     </div>
   );
@@ -314,7 +370,9 @@ function Field({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-3">
       <span className="text-xs text-mist-600">{label}</span>
-      <span className="truncate text-sm font-medium text-cloud-100">{value}</span>
+      <span className="truncate text-sm font-medium text-cloud-100">
+        {value}
+      </span>
     </div>
   );
 }
