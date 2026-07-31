@@ -1,6 +1,5 @@
-import { Avatar, Badge, Dropdown, Input, type MenuProps } from "antd";
+import { Avatar, Dropdown, Input, type MenuProps } from "antd";
 import {
-  BellOutlined,
   SearchOutlined,
   LogoutOutlined,
   UserOutlined,
@@ -10,54 +9,44 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/useAuth";
 import { toast } from "sonner";
 import { useGetProfileQuery } from "@/redux/features/auth/authApi";
-import { useGetDashboardOverviewQuery } from "@/redux/features/dashboard/dashboardApi";
-import { useGetPostsQuery } from "@/redux/features/forum/forumApi";
 import { getImageUrl } from "@/lib/getImageUrl";
+import { TopbarNotifications } from "./TopbarNotifications";
 
-export function Topbar({ title, subtitle, onOpenMobileNav }: { title: string; subtitle?: string; onOpenMobileNav?: () => void }) {
+export function Topbar({
+  title,
+  subtitle,
+  onOpenMobileNav,
+}: {
+  title: string;
+  subtitle?: string;
+  onOpenMobileNav?: () => void;
+}) {
   const { logout } = useAuth();
   const { data: profile } = useGetProfileQuery({});
-  const { data: dashboardRes } = useGetDashboardOverviewQuery();
-  const { data: reportedRes } = useGetPostsQuery({ status: "reported", page: 1, limit: 1 });
   const user = profile?.data;
   const navigate = useNavigate();
 
-  const pendingVendors = dashboardRes?.data?.pendingVendors ?? 0;
-  const reportedPosts = reportedRes?.pagination?.total ?? 0;
-  const alertCount = pendingVendors + reportedPosts;
-
   const handleLogout = () => {
     logout();
-    toast.message("Signed out", { description: "You've been logged out of Hubology admin." });
+    toast.message("Signed out", {
+      description: "You've been logged out of Hubology admin.",
+    });
     navigate("/login", { replace: true });
   };
 
   const userMenuItems: MenuProps["items"] = [
-    { key: "profile", label: "Signed in as " + (user?.email ?? ""), disabled: true },
-    { type: "divider" },
-    { key: "logout", label: "Sign out", icon: <LogoutOutlined />, danger: true, onClick: handleLogout },
-  ];
-
-  const notifItems: MenuProps["items"] = [
     {
-      key: "vendors",
-      label: (
-        <div className="flex items-center justify-between gap-6 py-0.5">
-          <span>Pending vendor applications</span>
-          <span className="font-semibold text-cloud-100">{pendingVendors}</span>
-        </div>
-      ),
-      onClick: () => navigate("/vendors"),
+      key: "profile",
+      label: "Signed in as " + (user?.email ?? ""),
+      disabled: true,
     },
+    { type: "divider" },
     {
-      key: "forum",
-      label: (
-        <div className="flex items-center justify-between gap-6 py-0.5">
-          <span>Reported forum posts</span>
-          <span className="font-semibold text-cloud-100">{reportedPosts}</span>
-        </div>
-      ),
-      onClick: () => navigate("/forum"),
+      key: "logout",
+      label: "Sign out",
+      icon: <LogoutOutlined />,
+      danger: true,
+      onClick: handleLogout,
     },
   ];
 
@@ -73,8 +62,12 @@ export function Topbar({ title, subtitle, onOpenMobileNav }: { title: string; su
       </button>
 
       <div className="min-w-0 flex-1">
-        <h1 className="truncate font-display text-[17px] font-semibold text-cloud-100">{title}</h1>
-        {subtitle && <p className="hidden truncate text-xs text-mist-400 sm:block">{subtitle}</p>}
+        <h1 className="truncate font-display text-[17px] font-semibold text-cloud-100">
+          {title}
+        </h1>
+        {subtitle && (
+          <p className="hidden truncate text-xs text-mist-400 sm:block">{subtitle}</p>
+        )}
       </div>
 
       <div className="hidden w-64 shrink-0 lg:block">
@@ -85,17 +78,7 @@ export function Topbar({ title, subtitle, onOpenMobileNav }: { title: string; su
         />
       </div>
 
-      <Dropdown menu={{ items: notifItems }} trigger={["click"]} placement="bottomRight">
-        <button
-          type="button"
-          className="relative flex h-9 w-9 items-center justify-center rounded-full text-mist-400 hover:bg-white/5 hover:text-cloud-100"
-          aria-label="Notifications"
-        >
-          <Badge count={alertCount} size="small" offset={[-2, 2]}>
-            <BellOutlined className="text-[16px]" />
-          </Badge>
-        </button>
-      </Dropdown>
+      <TopbarNotifications userId={user?._id} />
 
       <Dropdown menu={{ items: userMenuItems }} trigger={["click"]} placement="bottomRight">
         <button type="button" className="flex items-center gap-2 rounded-full pl-1 pr-2 hover:bg-white/5">
