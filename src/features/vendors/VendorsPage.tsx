@@ -6,6 +6,7 @@ import {
   DeleteOutlined,
   TeamOutlined,
   ClockCircleOutlined,
+  CrownOutlined,
 } from "@ant-design/icons";
 import { toast } from "sonner";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -29,6 +30,7 @@ import {
   type ApiVendor,
   type VendorAccountStatus,
 } from "@/redux/features/vendors/vendors.types";
+import { subscriptionStatusToneMap } from "@/features/users/statusMaps";
 import { statusDotClassMap, statusLabelMap } from "./statusMaps";
 import { VendorProfileModal } from "./components/VendorProfileModal";
 import { VendorStatusSelect } from "./components/VendorStatusSelect";
@@ -171,20 +173,30 @@ export default function VendorsPage() {
       ),
     },
     {
-      title: "Expertise",
-      key: "expertise",
+      title: "Subscription",
+      key: "subscription",
       responsive: ["md"],
       render: (_, record) => {
-        const expertise = record.vendorProfile?.expertise ?? [];
+        const sub = record.subscription;
+        if (!sub) {
+          return <span className="text-mist-600">—</span>;
+        }
         return (
-          <div className="flex flex-wrap gap-1">
-            {expertise.slice(0, 2).map((e) => (
-              <StatusTag key={e} tone="violet">
-                {e}
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <StatusTag tone="gold" icon={<CrownOutlined />}>
+                {sub.name}
               </StatusTag>
-            ))}
-            {expertise.length > 2 && <StatusTag tone="neutral">+{expertise.length - 2}</StatusTag>}
-            {expertise.length === 0 && <span className="text-mist-600">—</span>}
+              <StatusTag tone={subscriptionStatusToneMap[sub.status] ?? "neutral"}>
+                {sub.status}
+              </StatusTag>
+            </div>
+            <div className="mt-1 text-xs text-mist-400">
+              {formatCurrency(sub?.price?? 0)}
+              <span className="text-mist-600">/{sub?.recuring?? ''}</span>
+              <span className="mx-1 text-mist-700">·</span>
+              ends {formatDate(sub?.end_date?? '')}
+            </div>
           </div>
         );
       },

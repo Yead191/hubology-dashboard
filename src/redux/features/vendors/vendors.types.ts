@@ -1,3 +1,5 @@
+import type { UserSubscription } from "../users/users.types";
+
 export type VendorAccountStatus = "active" | "pending" | "blocked" | "rejected";
 
 export interface VendorProfile {
@@ -25,6 +27,7 @@ export interface ApiVendor {
   verified: boolean;
   interest: string;
   company: string;
+  subscription?: UserSubscription | null;
   vendorProfile: VendorProfile;
   createdAt: string;
   updatedAt: string;

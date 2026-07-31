@@ -11,11 +11,14 @@ import {
   ClockCircleOutlined,
   DollarOutlined,
   BookOutlined,
+  CrownOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { toFileUrl } from "@/config";
 import type { ApiVendor, VendorAccountStatus } from "@/redux/features/vendors/vendors.types";
+import { subscriptionStatusToneMap } from "@/features/users/statusMaps";
 import { statusLabelMap, statusToneMap } from "../statusMaps";
 import { VendorStatusSelect } from "./VendorStatusSelect";
 
@@ -37,6 +40,7 @@ export function VendorProfileModal({
   if (!vendor) return null;
 
   const profile = vendor.vendorProfile;
+  const subscription = vendor.subscription;
 
   return (
     <Modal
@@ -92,7 +96,14 @@ export function VendorProfileModal({
                   {vendor.company ? ` · ${vendor.company}` : ""}
                 </p>
               </div>
-              <StatusTag tone={statusToneMap[vendor.status]}>{statusLabelMap[vendor.status]}</StatusTag>
+              <div className="flex flex-wrap gap-1.5">
+                <StatusTag tone={statusToneMap[vendor.status]}>{statusLabelMap[vendor.status]}</StatusTag>
+                {subscription && (
+                  <StatusTag tone="gold" icon={<CrownOutlined />}>
+                    {subscription.name}
+                  </StatusTag>
+                )}
+              </div>
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
@@ -145,6 +156,72 @@ export function VendorProfileModal({
           <Section title="About">
             <p className="text-sm leading-relaxed text-mist-300">{profile.bio}</p>
           </Section>
+        )}
+
+        {subscription ? (
+          <div className="mt-5 overflow-hidden rounded-2xl border border-[#f5b544]/25 bg-gradient-to-br from-[#f5b544]/10 to-transparent">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f5b544]/15 px-4 py-3.5">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f5b544]/15 text-[#f5b544]">
+                  <CrownOutlined />
+                </div>
+                <div>
+                  <div className="font-display text-sm font-semibold text-cloud-100">
+                    {subscription.name}
+                  </div>
+                  <div className="text-xs capitalize text-mist-400">
+                    Billed {subscription.recuring}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <StatusTag tone={subscriptionStatusToneMap[subscription.status] ?? "neutral"}>
+                  {subscription.status}
+                </StatusTag>
+                <span className="font-display text-base font-semibold text-[#f5b544]">
+                  {formatCurrency(subscription.price)}
+                  <span className="text-xs font-normal text-mist-400">/{subscription.recuring}</span>
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 px-4 py-3.5 text-sm">
+              <div className="flex items-center gap-2 text-mist-300">
+                <CalendarOutlined className="text-mist-600" />
+                <div>
+                  <div className="text-[11px] text-mist-600">Starts</div>
+                  <div className="font-medium text-cloud-100">{formatDate(subscription.start_date)}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-mist-300">
+                <CalendarOutlined className="text-mist-600" />
+                <div>
+                  <div className="text-[11px] text-mist-600">Ends</div>
+                  <div className="font-medium text-cloud-100">{formatDate(subscription.end_date)}</div>
+                </div>
+              </div>
+            </div>
+
+            {!!subscription.features?.length && (
+              <div className="border-t border-[#f5b544]/15 px-4 py-3.5">
+                <div className="mb-2 text-xs font-medium uppercase tracking-wide text-mist-600">
+                  Plan features
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {subscription.features.map((feature) => (
+                    <StatusTag key={feature} tone="neutral">
+                      {feature}
+                    </StatusTag>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="mt-5 rounded-2xl border border-dashed border-navy-600/70 px-4 py-5 text-center">
+            <CrownOutlined className="text-lg text-mist-600" />
+            <p className="mt-2 text-sm text-mist-400">No subscription package on this account.</p>
+          </div>
         )}
 
         <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
