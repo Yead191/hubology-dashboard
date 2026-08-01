@@ -10,7 +10,10 @@ import {
 } from "@ant-design/icons";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
-import type { ApiBooking, BookingStatus } from "@/redux/features/bookings/bookings.types";
+import type {
+  ApiBooking,
+  BookingStatus,
+} from "@/redux/features/bookings/bookings.types";
 import {
   bookingStatusLabelMap,
   bookingStatusToneMap,
@@ -18,6 +21,7 @@ import {
   paymentStatusToneMap,
 } from "../bookingStatusMaps";
 import { BookingStatusSelect } from "./BookingStatusSelect";
+import { getImageUrl } from "@/lib/getImageUrl";
 
 export function BookingDetailDrawer({
   booking,
@@ -35,31 +39,48 @@ export function BookingDetailDrawer({
   if (!booking) return null;
 
   return (
-    <Drawer open={open} onClose={onClose} width={460} title="Booking details" destroyOnHidden>
+    <Drawer
+      open={open}
+      onClose={onClose}
+      width={460}
+      title="Booking details"
+      destroyOnHidden
+    >
       <div className="flex items-start gap-4">
-        <Avatar icon={<UserOutlined />} size={56} className="bg-violet-600/30! text-violet-glow!" />
+        <Avatar
+          src={getImageUrl(booking.user.image)}
+          size={56}
+          className="bg-violet-600/30! text-violet-glow!"
+        />
         <div className="min-w-0 flex-1">
-          <h2 className="font-display text-lg font-semibold text-cloud-100">{booking.user.name}</h2>
+          <h2 className="font-display text-lg font-semibold text-cloud-100">
+            {booking.user.name}
+          </h2>
           <p className="truncate text-sm text-mist-400">{booking.user.email}</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             <StatusTag tone={bookingStatusToneMap[booking.status]}>
               {bookingStatusLabelMap[booking.status]}
             </StatusTag>
             <StatusTag tone={paymentStatusToneMap[booking.paymentStatus]}>
-              {paymentStatusLabelMap[booking.paymentStatus] ?? booking.paymentStatus}
+              {paymentStatusLabelMap[booking.paymentStatus] ??
+                booking.paymentStatus}
             </StatusTag>
           </div>
         </div>
       </div>
 
       <div className="mt-5 rounded-xl border border-navy-700/60 bg-navy-800/40 p-4">
-        <div className="text-xs font-medium uppercase tracking-wide text-mist-600">Service</div>
+        <div className="text-xs font-medium uppercase tracking-wide text-mist-600">
+          Service
+        </div>
         <div className="mt-1 font-display text-base font-semibold text-cloud-100">
           {booking?.service?.title}
         </div>
         <div className="mt-3 flex items-center gap-2 text-sm text-mist-300">
           <DollarOutlined className="text-mist-600" />
-          <span className="font-semibold text-cloud-100">{formatCurrency(booking.price)}</span>
+          <span className="font-semibold text-cloud-100">
+            {formatCurrency(booking.price)}
+          </span>
         </div>
       </div>
 
@@ -70,7 +91,11 @@ export function BookingDetailDrawer({
             label="Preferred date"
             value={formatDate(booking.preferredDate)}
           />
-          <Field icon={<ClockCircleOutlined />} label="Preferred time" value={booking.preferredTime || "—"} />
+          <Field
+            icon={<ClockCircleOutlined />}
+            label="Preferred time"
+            value={booking.preferredTime || "—"}
+          />
         </div>
       </Section>
 
@@ -101,14 +126,26 @@ export function BookingDetailDrawer({
 
       <Section title="Payment">
         <div className="grid grid-cols-1 gap-3 text-sm">
-          <Field label="Payment status" value={paymentStatusLabelMap[booking.paymentStatus] ?? booking.paymentStatus} />
-          <Field label="Payment intent" value={booking.paymentIntentId || "—"} mono />
+          <Field
+            label="Payment status"
+            value={
+              paymentStatusLabelMap[booking.paymentStatus] ??
+              booking.paymentStatus
+            }
+          />
+          <Field
+            label="Payment intent"
+            value={booking.paymentIntentId || "—"}
+            mono
+          />
           <Field label="Booked on" value={formatDateTime(booking.createdAt)} />
         </div>
       </Section>
 
       <div className="sticky bottom-0 -mx-6 mt-6 border-t border-navy-700/60 bg-[#0f1230]/95 px-6 py-4 backdrop-blur">
-        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-mist-600">Update status</div>
+        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-mist-600">
+          Update status
+        </div>
         <div className="flex gap-2">
           <BookingStatusSelect
             size="middle"
@@ -127,7 +164,9 @@ export function BookingDetailDrawer({
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="mt-5">
-      <div className="mb-2 text-xs font-medium uppercase tracking-wide text-mist-600">{title}</div>
+      <div className="mb-2 text-xs font-medium uppercase tracking-wide text-mist-600">
+        {title}
+      </div>
       {children}
     </div>
   );
@@ -147,7 +186,9 @@ function Field({
   return (
     <div>
       <div className="text-xs text-mist-600">{label}</div>
-      <div className={`mt-0.5 flex items-center gap-1.5 font-medium text-cloud-100 ${mono ? "font-mono text-xs" : ""}`}>
+      <div
+        className={`mt-0.5 flex items-center gap-1.5 font-medium text-cloud-100 ${mono ? "font-mono text-xs" : ""}`}
+      >
         {icon && <span className="text-mist-600">{icon}</span>}
         <span className="truncate">{value}</span>
       </div>
