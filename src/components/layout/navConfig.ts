@@ -15,6 +15,7 @@ import {
   SettingOutlined,
   BookOutlined,
   UserOutlined,
+  CommentOutlined,
 } from "@ant-design/icons";
 import type { ComponentType } from "react";
 
@@ -112,5 +113,11 @@ export const NAV_ITEMS: NavItem[] = [
     path: "/forum",
     icon: MessageOutlined,
     badgeKey: "reportedPosts",
+  },
+  {
+    key: "testimonials",
+    label: "Testimonials",
+    path: "/testimonials",
+    icon: CommentOutlined,
   },
 ];

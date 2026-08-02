@@ -5,9 +5,13 @@
  * at different backends per environment, falling back to the LAN dev server.
  */
 
-const DEV_HOST = "http://10.10.26.173:5003";
+const DEV_HOST =
+  (import.meta.env.VITE_IMAGE_URL as string) ||
+  "https://api.thehubology.com" ||
+  "http://10.10.26.173:5003";
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? `${DEV_HOST}/api/v1`;
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? `${DEV_HOST}/api/v1`;
 
 /** Base path for server-hosted files (avatars, documents, uploads). */
 export const IMAGE_URL = import.meta.env.VITE_IMAGE_URL ?? `${DEV_HOST}/files`;

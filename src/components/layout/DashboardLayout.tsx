@@ -17,6 +17,7 @@ const PAGE_META: { match: (path: string) => boolean; title: string; subtitle?: s
   { match: (p) => p === "/transactions", title: "Transaction history", subtitle: "Payments across membership, shop, and services" },
   { match: (p) => p.startsWith("/forum/"), title: "Post review", subtitle: "Inspect reports and take moderation action" },
   { match: (p) => p === "/forum", title: "Forum moderation", subtitle: "Monitor community posts and reported content" },
+  { match: (p) => p === "/testimonials", title: "Testimonials", subtitle: "Manage client quotes shown on the marketing site" },
   { match: (p) => p === "/ifundayiti", title: "IFundAyiti", subtitle: "Micro grant program overview and analytics" },
   { match: (p) => p === "/ifundayiti/applications", title: "Applications", subtitle: "Manage every application through its full lifecycle" },
   { match: (p) => p === "/ifundayiti/periods", title: "Application periods", subtitle: "Create and manage grant cycles" },
