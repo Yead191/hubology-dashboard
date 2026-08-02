@@ -63,15 +63,6 @@ export default function LoginPage() {
     }
   };
 
-  const fillDemo = (
-    form: ReturnType<typeof Form.useForm<LoginFormValues>>[0],
-  ) => {
-    form.setFieldsValue({
-      email: "superadmin@gmail.com",
-      password: "password@",
-    });
-  };
-
   const [form] = Form.useForm<LoginFormValues>();
 
   return (
@@ -120,7 +111,7 @@ export default function LoginPage() {
               <Input
                 size="large"
                 prefix={<MailOutlined className="text-mist-600" />}
-                placeholder="admin@hubology.com"
+                placeholder="Enter your email address"
                 autoComplete="email"
               />
             </Form.Item>
@@ -151,20 +142,6 @@ export default function LoginPage() {
               Sign in
             </Button>
           </Form>
-
-          <div className="mt-5 flex items-center justify-between rounded-xl border border-navy-600/60 bg-navy-800/50 px-4 py-3 text-xs">
-            <div className="text-mist-400">
-              Demo login:{" "}
-              <span className="text-cloud-100">superadmin@gmail.com</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => fillDemo(form)}
-              className="font-medium text-violet-glow transition hover:text-cloud-100"
-            >
-              Autofill
-            </button>
-          </div>
         </div>
 
         <p className="mt-6 text-center text-xs text-mist-600">
