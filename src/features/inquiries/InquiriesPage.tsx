@@ -245,7 +245,7 @@ export default function InquiriesPage() {
             <FormOutlined className="text-lg text-white" />
           </div>
           <div>
-            <h2 className="font-display text-xl font-semibold text-cloud-100">Website inquiries</h2>
+            <h2 className="font-display text-xl font-semibold text-cloud-100">Project inquiries</h2>
             <p className="mt-1 max-w-xl text-sm text-mist-400">
               Track project leads submitted from the Hubology website — update status, add notes,
               and keep your pipeline moving.
