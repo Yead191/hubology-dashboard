@@ -1,5 +1,6 @@
 import { baseApi } from "../../api/baseApi";
 import type {
+  CreateInquiryPayload,
   GetInquiriesParams,
   InquiryMutationResponse,
   InquiriesListResponse,
@@ -27,6 +28,15 @@ export const inquiriesApi = baseApi.injectEndpoints({
               { type: "Inquiries", id: "LIST" },
             ]
           : [{ type: "Inquiries", id: "LIST" }],
+    }),
+
+    createInquiry: builder.mutation<InquiryMutationResponse, CreateInquiryPayload>({
+      query: (body) => ({
+        url: "/inquiry",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "Inquiries", id: "LIST" }],
     }),
 
     updateInquiry: builder.mutation<
@@ -57,6 +67,7 @@ export const inquiriesApi = baseApi.injectEndpoints({
 
 export const {
   useGetInquiriesQuery,
+  useCreateInquiryMutation,
   useUpdateInquiryMutation,
   useDeleteInquiryMutation,
 } = inquiriesApi;

@@ -58,6 +58,17 @@ export interface UpdateInquiryPayload {
   note?: string;
 }
 
+export interface CreateInquiryPayload {
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  projectDescription: string;
+  budget: ProjectBudget;
+  status?: InquiryStatus;
+  note?: string;
+}
+
 export interface InquiryMutationResponse {
   success: boolean;
   message: string;

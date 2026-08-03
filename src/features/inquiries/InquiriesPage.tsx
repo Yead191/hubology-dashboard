@@ -6,6 +6,7 @@ import {
   FormOutlined,
   MailOutlined,
   BankOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import { toast } from "sonner";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -17,6 +18,7 @@ import { useConfirmDelete } from "@/hooks/useConfirmDelete";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { cn, formatDate } from "@/lib/utils";
 import {
+  useCreateInquiryMutation,
   useDeleteInquiryMutation,
   useGetInquiriesQuery,
   useUpdateInquiryMutation,
@@ -25,6 +27,7 @@ import {
   INQUIRY_STATUS_OPTIONS,
   PROJECT_BUDGET_OPTIONS,
   type ApiInquiry,
+  type CreateInquiryPayload,
   type InquiryStatus,
   type ProjectBudget,
   type UpdateInquiryPayload,
@@ -33,9 +36,9 @@ import {
   budgetLabelMap,
   inquiryStatusDotClassMap,
   inquiryStatusLabelMap,
-  inquiryStatusToneMap,
 } from "./statusMaps";
 import { InquiryDetailModal } from "./components/InquiryDetailModal";
+import { InquiryFormModal } from "./components/InquiryFormModal";
 import { InquiryStatusSelect } from "./components/InquiryStatusSelect";
 
 type StatusTab = InquiryStatus | "all";
@@ -60,6 +63,7 @@ export default function InquiriesPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [viewing, setViewing] = useState<ApiInquiry | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
 
   useEffect(() => {
     setPage(1);
@@ -92,6 +96,7 @@ export default function InquiriesPage() {
   });
 
   const [updateInquiry, { isLoading: isUpdating }] = useUpdateInquiryMutation();
+  const [createInquiry, { isLoading: isCreating }] = useCreateInquiryMutation();
   const [deleteInquiry] = useDeleteInquiryMutation();
 
   const inquiries = data?.data ?? [];
@@ -140,6 +145,23 @@ export default function InquiriesPage() {
       });
     } catch (error) {
       toast.error("Couldn't update inquiry", {
+        description: getErrorMessage(error),
+      });
+    }
+  };
+
+  const handleCreate = async (payload: CreateInquiryPayload) => {
+    try {
+      const res = await createInquiry(payload).unwrap();
+      toast.success("Inquiry created", {
+        description: `${payload.name}'s inquiry has been added to the pipeline.`,
+      });
+      setFormOpen(false);
+      if (res.data) {
+        setViewing(res.data);
+      }
+    } catch (error) {
+      toast.error("Couldn't create inquiry", {
         description: getErrorMessage(error),
       });
     }
@@ -252,12 +274,22 @@ export default function InquiriesPage() {
             </p>
           </div>
         </div>
-        {newCount > 0 && (
-          <div className="rounded-2xl border border-info/25 bg-info/10 px-4 py-3 text-sm">
-            <div className="font-semibold text-info">{newCount} new</div>
-            <div className="text-xs text-mist-400">Awaiting first contact</div>
-          </div>
-        )}
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+          {newCount > 0 && (
+            <div className="rounded-2xl border border-info/25 bg-info/10 px-4 py-3 text-sm">
+              <div className="font-semibold text-info">{newCount} new</div>
+              <div className="text-xs text-mist-400">Awaiting first contact</div>
+            </div>
+          )}
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            className="btn-gradient border-0!"
+            onClick={() => setFormOpen(true)}
+          >
+            Log inquiry
+          </Button>
+        </div>
       </div>
 
       <GlassCard flat className="mb-4" padded={false}>
@@ -326,7 +358,9 @@ export default function InquiriesPage() {
           <EmptyState
             icon={<FormOutlined />}
             title="No inquiries in this view"
-            description="Try another status tab, clear filters, or adjust your search."
+            description="Try another status tab, clear filters, or log a new inquiry on behalf of a client."
+            actionLabel="Log inquiry"
+            onAction={() => setFormOpen(true)}
           />
         ) : (
           <Table
@@ -348,6 +382,16 @@ export default function InquiriesPage() {
           />
         )}
       </GlassCard>
+
+      <InquiryFormModal
+        open={formOpen}
+        loading={isCreating}
+        onCancel={() => {
+          if (isCreating) return;
+          setFormOpen(false);
+        }}
+        onSubmit={handleCreate}
+      />
 
       <InquiryDetailModal
         inquiry={viewing}
