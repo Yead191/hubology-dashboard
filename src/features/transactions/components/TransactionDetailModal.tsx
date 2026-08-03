@@ -74,7 +74,7 @@ export function TransactionDetailModal({
       <div className="relative overflow-hidden px-6 pb-5 pt-7 md:px-8">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -top-24 left-1/4 h-56 w-56 rounded-full bg-violet-600/25 blur-[80px]" />
-          <div className="absolute -bottom-16 right-0 h-44 w-44 rounded-full bg-[#f5b544]/12 blur-[70px]" />
+          <div className="absolute -bottom-16 right-0 h-44 w-44 rounded-full bg-warning/12 blur-[70px]" />
         </div>
 
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -103,9 +103,9 @@ export function TransactionDetailModal({
             </p>
           </div>
 
-          <div className="rounded-2xl border border-[#f5b544]/25 bg-[#f5b544]/10 px-4 py-3 text-right">
+          <div className="rounded-2xl border border-warning/25 bg-warning/10 px-4 py-3 text-right">
             <div className="text-[11px] uppercase tracking-wide text-mist-500">Amount</div>
-            <div className="font-display text-2xl font-semibold text-[#f5b544]">
+            <div className="font-display text-2xl font-semibold text-warning">
               {formatCurrency(transaction.total_price)}
             </div>
           </div>
@@ -113,14 +113,14 @@ export function TransactionDetailModal({
 
         <div className="relative mt-5 flex items-center gap-3 rounded-2xl border border-navy-700/60 bg-navy-800/40 p-3.5">
           <Avatar
-            src={getImageUrl(transaction.user.image)}
+            src={getImageUrl(transaction?.user?.image || "")}
             icon={<UserOutlined />}
             size={48}
             className="bg-violet-600/25! text-violet-glow!"
           />
           <div className="min-w-0">
-            <div className="font-medium text-cloud-100">{transaction.user.name}</div>
-            <div className="truncate text-xs text-mist-400">{transaction.user.email}</div>
+            <div className="font-medium text-cloud-100">{transaction?.user?.name || "—"}</div>
+            <div className="truncate text-xs text-mist-400">{transaction?.user?.email || "—"}</div>
           </div>
         </div>
       </div>
@@ -177,7 +177,7 @@ function Metric({
       <div
         className={
           accent
-            ? "mt-1 font-display text-base font-semibold text-[#f5b544]"
+            ? "mt-1 font-display text-base font-semibold text-warning"
             : "mt-1 font-display text-base font-semibold text-cloud-100"
         }
       >
@@ -210,7 +210,7 @@ function IdRow({
           size="small"
           icon={copied ? <CheckOutlined className="text-success" /> : <CopyOutlined />}
           onClick={onCopy}
-          className="!text-mist-400 hover:!text-violet-glow"
+          className="text-mist-400! hover:text-violet-glow!"
         />
       </Tooltip>
     </div>
