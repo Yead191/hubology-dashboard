@@ -4,6 +4,8 @@ import { Drawer } from "antd";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 
+import { DISCLAIMER_PAGES } from "@/features/disclaimer/disclaimerConfig";
+
 const PAGE_META: { match: (path: string) => boolean; title: string; subtitle?: string }[] = [
   { match: (p) => p === "/", title: "Overview", subtitle: "Everything happening across Hubology, at a glance" },
   { match: (p) => p === "/services", title: "Manage services", subtitle: "Create and update consulting packages shown on the site" },
@@ -19,6 +21,11 @@ const PAGE_META: { match: (path: string) => boolean; title: string; subtitle?: s
   { match: (p) => p === "/forum", title: "Forum moderation", subtitle: "Monitor community posts and reported content" },
   { match: (p) => p === "/testimonials", title: "Testimonials", subtitle: "Manage client quotes shown on the marketing site" },
   { match: (p) => p === "/inquiries", title: "Website inquiries", subtitle: "Track and manage project leads from the Hubology site" },
+  ...DISCLAIMER_PAGES.map((page) => ({
+    match: (p: string) => p === page.path,
+    title: page.title,
+    subtitle: page.subtitle,
+  })),
   { match: (p) => p === "/ifundayiti", title: "IFundAyiti", subtitle: "Micro grant program overview and analytics" },
   { match: (p) => p === "/ifundayiti/applications", title: "Applications", subtitle: "Manage every application through its full lifecycle" },
   { match: (p) => p === "/ifundayiti/periods", title: "Application periods", subtitle: "Create and manage grant cycles" },

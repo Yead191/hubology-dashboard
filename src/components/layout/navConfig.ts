@@ -17,8 +17,10 @@ import {
   UserOutlined,
   CommentOutlined,
   FormOutlined,
+  FileTextOutlined,
 } from "@ant-design/icons";
 import type { ComponentType } from "react";
+import { DISCLAIMER_PAGES } from "@/features/disclaimer/disclaimerConfig";
 
 export interface NavItem {
   key: string;
@@ -126,5 +128,17 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Inquiries",
     path: "/inquiries",
     icon: FormOutlined,
+  },
+  {
+    key: "disclaimer",
+    label: "Disclaimer",
+    path: "/disclaimer/user-terms",
+    icon: FileTextOutlined,
+    children: DISCLAIMER_PAGES.map((page) => ({
+      key: `disclaimer-${page.type}`,
+      label: page.label,
+      path: page.path,
+      icon: page.icon,
+    })),
   },
 ];
