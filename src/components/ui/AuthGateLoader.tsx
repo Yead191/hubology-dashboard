@@ -14,7 +14,7 @@ export function AuthGateLoader({
       <div className="relative flex flex-col items-center px-6">
         <div className="relative mb-7 flex h-28 w-28 items-center justify-center">
           <span className="absolute inset-0 animate-[spin_2.8s_linear_infinite] rounded-full border border-violet-600/20 border-t-violet-glow/90 border-r-violet-600/35" />
-          <span className="absolute inset-2.5 animate-[spin_1.8s_linear_infinite_reverse] rounded-full border border-transparent border-b-[#f5b544]/65 border-l-[#f5b544]/20" />
+          <span className="absolute inset-2.5 animate-[spin_1.8s_linear_infinite_reverse] rounded-full border border-transparent border-b-warning/65 border-l-warning/20" />
           <span className="absolute inset-5 animate-pulse rounded-full bg-violet-600/15 blur-xl" />
 
           <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-navy-800/80 shadow-[0_12px_40px_-12px_rgba(129,49,240,0.55)] backdrop-blur-sm">
