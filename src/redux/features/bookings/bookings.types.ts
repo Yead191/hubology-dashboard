@@ -20,6 +20,7 @@ export interface ApiBooking {
   preferredDate: string;
   preferredTime: string;
   note: string;
+  phone?: string;
   price: number;
   status: BookingStatus;
   paymentStatus: PaymentStatus;

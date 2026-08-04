@@ -147,7 +147,7 @@ export default function TransactionsPage() {
       render: (_, record) => (
         <Button
           type="text"
-          className="!text-mist-400 hover:!bg-violet-600/15 hover:!text-violet-glow"
+          className="text-mist-400! hover:bg-violet-600/15! hover:text-violet-glow!"
           icon={<EyeOutlined />}
           onClick={() => setViewing(record)}
         >
@@ -161,11 +161,11 @@ export default function TransactionsPage() {
     <div>
       <div className="aurora-field glass-panel mb-6 overflow-hidden p-6 md:p-7">
         <div className="relative flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <div className="pointer-events-none absolute -right-8 -top-16 h-44 w-44 rounded-full bg-[#f5b544]/15 blur-[60px]" />
+          <div className="pointer-events-none absolute -right-8 -top-16 h-44 w-44 rounded-full bg-warning/15 blur-[60px]" />
           <div className="pointer-events-none absolute -bottom-20 left-1/4 h-36 w-36 rounded-full bg-violet-600/20 blur-[50px]" />
 
           <div className="relative flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#8131F0] to-[#4A1C8A] shadow-[0_8px_24px_-8px_rgba(129,49,240,0.65)]">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-[#8131F0] to-[#4A1C8A] shadow-[0_8px_24px_-8px_rgba(129,49,240,0.65)]">
               <HistoryOutlined className="text-lg text-white" />
             </div>
             <div>
@@ -179,8 +179,8 @@ export default function TransactionsPage() {
             </div>
           </div>
 
-          <div className="relative rounded-2xl border border-[#f5b544]/25 bg-[#f5b544]/10 px-4 py-3 text-sm">
-            <div className="font-semibold text-[#f5b544]">
+          <div className="relative rounded-2xl border border-warning/25 bg-warning/10 px-4 py-3 text-sm">
+            <div className="font-semibold text-warning">
               {pagination?.total ?? 0} total
             </div>
             <div className="text-xs text-mist-400">Ledger entries</div>

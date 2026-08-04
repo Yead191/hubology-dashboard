@@ -31,7 +31,7 @@ import {
   paymentStatusLabelMap,
   paymentStatusToneMap,
 } from "./bookingStatusMaps";
-import { BookingDetailDrawer } from "./components/BookingDetailDrawer";
+import { BookingDetailModal } from "./components/BookingDetailModal";
 import { BookingStatusSelect } from "./components/BookingStatusSelect";
 import { getImageUrl } from "@/lib/getImageUrl";
 
@@ -278,7 +278,7 @@ export default function ServiceBookingsPage() {
         )}
       </GlassCard>
 
-      <BookingDetailDrawer
+      <BookingDetailModal
         booking={viewing}
         open={!!viewing}
         updating={isUpdatingStatus}
