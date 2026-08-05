@@ -86,7 +86,7 @@ export default function TransactionsPage() {
             className="bg-violet-600/25! text-violet-glow!"
           />
           <div className="min-w-0">
-            <div className="font-medium text-cloud-100">{record?.user?.name || "—"}</div>
+            <div className="font-medium text-cloud-100">{record?.user?.name || "Deleted user"}</div>
             <div className="max-w-48 truncate text-xs text-mist-400">
               {record?.user?.email || "—"}
             </div>  

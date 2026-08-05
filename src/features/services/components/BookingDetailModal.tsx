@@ -99,7 +99,7 @@ export function BookingDetailModal({
               {booking.service?.title ?? "Service booking"}
             </h2>
             <p className="mt-1 text-sm text-mist-400">
-              {booking.user.name}
+              {booking?.user?.name}
               {booking.createdAt ? ` · Booked ${formatDate(booking.createdAt)}` : ""}
             </p>
           </div>
@@ -114,14 +114,14 @@ export function BookingDetailModal({
 
         <div className="relative mt-5 flex items-center gap-3 rounded-2xl border border-navy-700/60 bg-navy-800/40 p-3.5">
           <Avatar
-            src={getImageUrl(booking.user.image)}
+            src={getImageUrl(booking?.user?.image ?? "")}
             icon={<UserOutlined />}
             size={48}
             className="bg-violet-600/25! text-violet-glow!"
           />
           <div className="min-w-0">
-            <div className="font-medium text-cloud-100">{booking.user.name}</div>
-            <div className="truncate text-xs text-mist-400">{booking.user.email}</div>
+            <div className="font-medium text-cloud-100">{booking?.user?.name || "Deleted user"}</div>
+            <div className="truncate text-xs text-mist-400">{booking?.user?.email || "—"}</div>
           </div>
         </div>
       </div>
@@ -152,10 +152,10 @@ export function BookingDetailModal({
               tone="info"
               value={
                 <a
-                  href={`mailto:${booking.user.email}`}
+                  href={`mailto:${booking?.user?.email}`}
                   className="text-sm font-medium text-cloud-100 transition hover:text-violet-glow"
                 >
-                  {booking.user.email}
+                  {booking?.user?.email}
                 </a>
               }
             />
