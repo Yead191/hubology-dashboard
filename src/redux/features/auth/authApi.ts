@@ -1,5 +1,13 @@
 import { baseApi } from "../../api/baseApi";
-import type { LoginRequest, LoginResponse } from "./auth.types";
+import type {
+  ForgetPasswordRequest,
+  LoginRequest,
+  LoginResponse,
+  MessageResponse,
+  ResetPasswordRequest,
+  VerifyEmailRequest,
+  VerifyEmailResponse,
+} from "./auth.types";
 
 /**
  * Auth endpoints injected into the shared base API. Injecting (rather than
@@ -16,6 +24,34 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Profile"],
     }),
+
+    forgetPassword: builder.mutation<MessageResponse, ForgetPasswordRequest>({
+      query: (body) => ({
+        url: "/auth/forget-password",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    verifyEmail: builder.mutation<VerifyEmailResponse, VerifyEmailRequest>({
+      query: (body) => ({
+        url: "/auth/verify-email",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    resetPassword: builder.mutation<MessageResponse, ResetPasswordRequest>({
+      query: ({ resetToken, newPassword, confirmPassword }) => ({
+        url: "/auth/reset-password",
+        method: "POST",
+        body: { newPassword, confirmPassword },
+        headers: {
+          Authorization: resetToken,
+        },
+      }),
+    }),
+
     getProfile: builder.query({
       query: () => ({
         url: "/user/profile",
@@ -29,4 +65,10 @@ export const authApi = baseApi.injectEndpoints({
   overrideExisting: false,
 });
 
-export const { useLoginMutation , useGetProfileQuery} = authApi;
+export const {
+  useLoginMutation,
+  useForgetPasswordMutation,
+  useVerifyEmailMutation,
+  useResetPasswordMutation,
+  useGetProfileQuery,
+} = authApi;

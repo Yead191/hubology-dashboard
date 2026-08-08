@@ -7,6 +7,9 @@ import { PageLoader } from "@/components/ui/PageLoader";
 // Route-level code splitting keeps the initial bundle lean — each page's
 // chunk is only fetched when the admin actually navigates there.
 const LoginPage = lazy(() => import("@/features/auth/LoginPage"));
+const ForgotPasswordPage = lazy(() => import("@/features/auth/ForgotPasswordPage"));
+const VerifyOtpPage = lazy(() => import("@/features/auth/VerifyOtpPage"));
+const ResetPasswordPage = lazy(() => import("@/features/auth/ResetPasswordPage"));
 const DashboardOverviewPage = lazy(() => import("@/features/dashboard/DashboardOverviewPage"));
 const ServicesPage = lazy(() => import("@/features/services/ServicesPage"));
 const ServiceBookingsPage = lazy(() => import("@/features/services/ServiceBookingsPage"));
@@ -33,6 +36,9 @@ export default function App() {
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/verify-otp" element={<VerifyOtpPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>

@@ -4,11 +4,12 @@ import {
   MailOutlined,
   ArrowRightOutlined,
 } from "@ant-design/icons";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { useLoginMutation } from "@/redux/features/auth/authApi";
 import { setCredentials } from "@/redux/features/auth/authSlice";
 import { useAppDispatch } from "@/redux/hooks";
+import { getAuthErrorMessage } from "./authUtils";
 
 interface LoginFormValues {
   email: string;
@@ -17,20 +18,7 @@ interface LoginFormValues {
 
 /** Pull a human-readable message out of an RTK Query error. */
 function getErrorMessage(error: unknown): string {
-  if (typeof error === "object" && error !== null) {
-    const err = error as {
-      data?: { message?: string };
-      error?: string;
-      message?: string;
-    };
-    return (
-      err.data?.message ??
-      err.message ??
-      err.error ??
-      "Those credentials don't match our records."
-    );
-  }
-  return "Something went wrong. Please try again.";
+  return getAuthErrorMessage(error, "Those credentials don't match our records.");
 }
 
 export default function LoginPage() {
@@ -128,6 +116,15 @@ export default function LoginPage() {
                 autoComplete="current-password"
               />
             </Form.Item>
+
+            <div className="-mt-1 mb-3 flex justify-end">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-violet-glow transition hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
 
             <Button
               type="primary"
