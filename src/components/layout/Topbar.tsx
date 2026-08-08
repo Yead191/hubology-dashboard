@@ -22,7 +22,7 @@ export function Topbar({
   onOpenMobileNav?: () => void;
 }) {
   const { logout } = useAuth();
-  const { data: profile } = useGetProfileQuery({});
+  const { data: profile } = useGetProfileQuery();
   const user = profile?.data;
   const navigate = useNavigate();
 
@@ -36,11 +36,17 @@ export function Topbar({
 
   const userMenuItems: MenuProps["items"] = [
     {
-      key: "profile",
+      key: "email",
       label: "Signed in as " + (user?.email ?? ""),
       disabled: true,
     },
     { type: "divider" },
+    {
+      key: "profile",
+      label: "Profile",
+      icon: <UserOutlined />,
+      onClick: () => navigate("/profile"),
+    },
     {
       key: "logout",
       label: "Sign out",

@@ -21,7 +21,7 @@ import { useGetPostsQuery } from "@/redux/features/forum/forumApi";
 import { getImageUrl } from "@/lib/getImageUrl";
 
 export default function DashboardOverviewPage() {
-  const { data: profile } = useGetProfileQuery({});
+  const { data: profile } = useGetProfileQuery();
   const { data: dashboardRes, isLoading: isDashboardLoading } = useGetDashboardOverviewQuery();
   const { data: pendingVendorsRes } = useGetVendorsQuery({ status: "pending", page: 1, limit: 3 });
   const { data: membershipRes } = useGetMembershipsQuery({

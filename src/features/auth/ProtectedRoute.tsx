@@ -5,7 +5,7 @@ import { useGetProfileQuery } from "@/redux/features/auth/authApi";
 import { useAuth } from "./useAuth";
 
 export function ProtectedRoute() {
-  const { data: profile, isLoading } = useGetProfileQuery({});
+  const { data: profile, isLoading } = useGetProfileQuery();
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();

@@ -8,6 +8,7 @@ import type {
   VerifyEmailRequest,
   VerifyEmailResponse,
 } from "./auth.types";
+import type { ChangePasswordRequest, ProfileResponse } from "./profile.types";
 
 /**
  * Auth endpoints injected into the shared base API. Injecting (rather than
@@ -52,13 +53,30 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-    getProfile: builder.query({
+    getProfile: builder.query<ProfileResponse, void>({
       query: () => ({
         url: "/user/profile",
         method: "GET",
         credentials: "include",
       }),
       providesTags: ["Profile"],
+    }),
+
+    updateProfile: builder.mutation<ProfileResponse, FormData>({
+      query: (body) => ({
+        url: "/user/profile",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Profile"],
+    }),
+
+    changePassword: builder.mutation<MessageResponse, ChangePasswordRequest>({
+      query: (body) => ({
+        url: "/auth/change-password",
+        method: "POST",
+        body,
+      }),
     }),
   }),
 
@@ -71,4 +89,6 @@ export const {
   useVerifyEmailMutation,
   useResetPasswordMutation,
   useGetProfileQuery,
+  useUpdateProfileMutation,
+  useChangePasswordMutation,
 } = authApi;

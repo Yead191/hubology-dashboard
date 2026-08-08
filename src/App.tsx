@@ -10,6 +10,7 @@ const LoginPage = lazy(() => import("@/features/auth/LoginPage"));
 const ForgotPasswordPage = lazy(() => import("@/features/auth/ForgotPasswordPage"));
 const VerifyOtpPage = lazy(() => import("@/features/auth/VerifyOtpPage"));
 const ResetPasswordPage = lazy(() => import("@/features/auth/ResetPasswordPage"));
+const ProfilePage = lazy(() => import("@/features/profile/ProfilePage"));
 const DashboardOverviewPage = lazy(() => import("@/features/dashboard/DashboardOverviewPage"));
 const ServicesPage = lazy(() => import("@/features/services/ServicesPage"));
 const ServiceBookingsPage = lazy(() => import("@/features/services/ServiceBookingsPage"));
@@ -57,6 +58,7 @@ export default function App() {
             <Route path="forum/:postId" element={<ForumPostDetailPage />} />
             <Route path="testimonials" element={<TestimonialsPage />} />
             <Route path="inquiries" element={<InquiriesPage />} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route path="disclaimer/:type" element={<DisclaimerEditorPage />} />
             <Route path="ifundayiti" element={<IFundAyitiOverviewPage />} />
             <Route path="ifundayiti/applications" element={<IFundAyitiApplicationsPage />} />

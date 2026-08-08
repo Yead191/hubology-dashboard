@@ -22,6 +22,7 @@ const PAGE_META: { match: (path: string) => boolean; title: string; subtitle?: s
   { match: (p) => p === "/forum", title: "Forum moderation", subtitle: "Monitor community posts and reported content" },
   { match: (p) => p === "/testimonials", title: "Testimonials", subtitle: "Manage client quotes shown on the marketing site" },
   { match: (p) => p === "/inquiries", title: "Website inquiries", subtitle: "Track and manage project leads from the Hubology site" },
+  { match: (p) => p === "/profile", title: "Your profile", subtitle: "Update your name, photo, and account password" },
   ...DISCLAIMER_PAGES.map((page) => ({
     match: (p: string) => p === page.path,
     title: page.title,
