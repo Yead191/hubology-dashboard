@@ -24,7 +24,11 @@ import { recurringLabelMap, subscriberStatusToneMap } from "./statusMaps";
 
 export default function MembershipSubscribersPage() {
   const { membershipId = "" } = useParams<{ membershipId: string }>();
-  const { value: search, setValue: setSearch, debouncedValue: searchTerm } = useDebouncedSearch();
+  const {
+    value: search,
+    setValue: setSearch,
+    debouncedValue: searchTerm,
+  } = useDebouncedSearch();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
@@ -32,15 +36,24 @@ export default function MembershipSubscribersPage() {
     setPage(1);
   }, [searchTerm, membershipId]);
 
-  const { data: userPlans } = useGetMembershipsQuery({ page: 1, limit: 100, type: "user" });
-  const { data: vendorPlans } = useGetMembershipsQuery({ page: 1, limit: 100, type: "vendor" });
+  const { data: userPlans } = useGetMembershipsQuery({
+    page: 1,
+    limit: 100,
+    type: "user",
+  });
+  const { data: vendorPlans } = useGetMembershipsQuery({
+    page: 1,
+    limit: 100,
+    type: "vendor",
+  });
   const plan =
-    [...(userPlans?.data ?? []), ...(vendorPlans?.data ?? [])].find((p) => p._id === membershipId) ??
-    null;
+    [...(userPlans?.data ?? []), ...(vendorPlans?.data ?? [])].find(
+      (p) => p._id === membershipId,
+    ) ?? null;
 
   const { data, isFetching } = useGetSubscribersQuery(
     { id: membershipId, page, limit, searchTerm },
-    { skip: !membershipId }
+    { skip: !membershipId },
   );
 
   const subscribers = data?.data ?? [];
@@ -62,14 +75,16 @@ export default function MembershipSubscribersPage() {
       render: (_, record) => (
         <div className="flex items-center gap-3">
           <Avatar
-            src={getImageUrl(record.user.image)}
+            src={getImageUrl(record?.user?.image || "")}
             icon={<UserOutlined />}
             size={40}
             className="bg-violet-600/25! text-violet-glow!"
           />
           <div className="min-w-0">
-            <div className="font-medium text-cloud-100">{record.user.name}</div>
-            <div className="max-w-56 truncate text-xs text-mist-400">{record.user.email}</div>
+            <div className="font-medium text-cloud-100">{record?.user?.name || "Deleted User"}</div>
+            <div className="max-w-56 truncate text-xs text-mist-400">
+              {record?.user?.email || "-"}
+            </div>
           </div>
         </div>
       ),
@@ -80,8 +95,12 @@ export default function MembershipSubscribersPage() {
       responsive: ["md"],
       render: (_, record) => (
         <div>
-          <div className="font-medium text-cloud-100">{record.name || record.plan?.name}</div>
-          <div className="text-xs capitalize text-mist-400">{record.recuring}</div>
+          <div className="font-medium text-cloud-100">
+            {record.name || record.plan?.name}
+          </div>
+          <div className="text-xs capitalize text-mist-400">
+            {record.recuring}
+          </div>
         </div>
       ),
     },
@@ -91,7 +110,9 @@ export default function MembershipSubscribersPage() {
       render: (_, record) => (
         <span className="font-display font-semibold text-cloud-100">
           {formatCurrency(record.price)}
-          <span className="text-xs font-normal text-mist-500">/{record.recuring}</span>
+          <span className="text-xs font-normal text-mist-500">
+            /{record.recuring}
+          </span>
         </span>
       ),
     },
@@ -102,7 +123,9 @@ export default function MembershipSubscribersPage() {
       render: (_, record) => (
         <div className="text-sm text-mist-300">
           <div>{formatDate(record.start_date)}</div>
-          <div className="text-xs text-mist-500">to {formatDate(record.end_date)}</div>
+          <div className="text-xs text-mist-500">
+            to {formatDate(record.end_date)}
+          </div>
         </div>
       ),
     },
@@ -124,7 +147,9 @@ export default function MembershipSubscribersPage() {
         if (!id) return <span className="text-mist-600">—</span>;
         return (
           <div className="flex max-w-44 items-center gap-1">
-            <code className="truncate font-mono text-[11px] text-mist-400">{id}</code>
+            <code className="truncate font-mono text-[11px] text-mist-400">
+              {id}
+            </code>
             <Tooltip title="Copy ID">
               <Button
                 type="text"
@@ -166,7 +191,8 @@ export default function MembershipSubscribersPage() {
                 </h2>
                 {plan && (
                   <StatusTag tone="gold">
-                    {formatCurrency(plan.price)}/{plan.recurring === "year" ? "yr" : "mo"}
+                    {formatCurrency(plan.price)}/
+                    {plan.recurring === "year" ? "yr" : "mo"}
                   </StatusTag>
                 )}
               </div>
@@ -179,7 +205,9 @@ export default function MembershipSubscribersPage() {
           </div>
 
           <div className="relative rounded-2xl border border-warning/25 bg-warning/10 px-4 py-3 text-sm">
-            <div className="font-semibold text-warning">{pagination?.total ?? 0} subscribers</div>
+            <div className="font-semibold text-warning">
+              {pagination?.total ?? 0} subscribers
+            </div>
             <div className="text-xs text-mist-400">On this plan</div>
           </div>
         </div>

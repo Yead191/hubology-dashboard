@@ -7,17 +7,13 @@ import {
   CrownOutlined,
   HistoryOutlined,
   MessageOutlined,
-  FileSearchOutlined,
-  HeartOutlined,
-  PieChartOutlined,
-  CalendarOutlined,
-  DollarOutlined,
   SettingOutlined,
   BookOutlined,
   UserOutlined,
   CommentOutlined,
   FormOutlined,
   FileTextOutlined,
+  QuestionCircleOutlined,
 } from "@ant-design/icons";
 import type { ComponentType } from "react";
 import { DISCLAIMER_PAGES } from "@/features/disclaimer/disclaimerConfig";
@@ -103,6 +99,20 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Membership",
     path: "/membership",
     icon: CrownOutlined,
+    children: [
+      {
+        key: "membership-plans",
+        label: "Manage plans",
+        path: "/membership",
+        icon: CrownOutlined,
+      },
+      {
+        key: "membership-faq",
+        label: "Manage FAQ",
+        path: "/membership/faq",
+        icon: QuestionCircleOutlined,
+      },
+    ],
   },
   {
     key: "transactions",

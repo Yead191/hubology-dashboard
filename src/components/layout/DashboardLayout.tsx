@@ -15,6 +15,7 @@ const PAGE_META: { match: (path: string) => boolean; title: string; subtitle?: s
   { match: (p) => p === "/store/orders", title: "Manage orders", subtitle: "Track purchases and update fulfillment status" },
   { match: (p) => p === "/store", title: "Store catalog", subtitle: "Curate digital downloads and office essentials" },
   { match: (p) => p.startsWith("/membership/") && p.endsWith("/subscribers"), title: "Plan subscribers", subtitle: "Members subscribed to this membership plan" },
+  { match: (p) => p === "/membership/faq", title: "Membership FAQ", subtitle: "Questions and answers for user and vendor membership pages" },
   { match: (p) => p === "/membership", title: "Membership plans", subtitle: "Premium tiers for users and vendors" },
   { match: (p) => p === "/transactions", title: "Transaction history", subtitle: "Payments across membership, shop, and services" },
   { match: (p) => p.startsWith("/forum/"), title: "Post review", subtitle: "Inspect reports and take moderation action" },
