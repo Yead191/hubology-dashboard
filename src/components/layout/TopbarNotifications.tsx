@@ -12,6 +12,7 @@ import {
 } from "@/redux/features/notification/notificationApi";
 import { SOCKET_URL, TOKEN_KEY } from "@/config";
 import { cn, formatDateTime } from "@/lib/utils";
+import { resolveNotificationPath } from "@/lib/notificationPath";
 
 const PAGE_SIZE = 10;
 
@@ -115,20 +116,20 @@ export function TopbarNotifications({ userId }: TopbarNotificationsProps) {
     return () => observer.disconnect();
   }, [open, hasMore, isFetching, notifications.length]);
 
-  const handleRead = async (notification: NotificationItem) => {
-    if (!notification.seen) {
-      setPage(1);
-      try {
-        await readNotification({ id: notification._id }).unwrap();
-      } catch {
-        toast.error("Couldn't update notification.");
-        return;
-      }
+  const handleNotificationClick = (notification: NotificationItem) => {
+    setOpen(false);
+
+    const targetPath = resolveNotificationPath(notification.path);
+    if (targetPath) {
+      navigate(targetPath);
     }
 
-    if (notification.path) {
-      setOpen(false);
-      navigate(notification.path);
+    if (!notification.seen) {
+      readNotification({ id: notification._id })
+        .unwrap()
+        .catch(() => {
+          toast.error("Couldn't mark notification as read.");
+        });
     }
   };
 
@@ -224,7 +225,7 @@ export function TopbarNotifications({ userId }: TopbarNotificationsProps) {
                     <button
                       key={notification._id}
                       type="button"
-                      onClick={() => void handleRead(notification)}
+                      onClick={() => handleNotificationClick(notification)}
                       className={cn(
                         "block w-full border-b border-navy-700/50 px-4 py-3.5 text-left transition last:border-b-0",
                         unread ? "bg-violet-600/8 hover:bg-violet-600/14" : "hover:bg-white/3"
