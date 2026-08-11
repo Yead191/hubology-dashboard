@@ -7,7 +7,7 @@ import type {
 
 export const servicesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getServices: builder.query<ServicesListResponse, GetServicesParams | void>({
+    getServices: builder.query<ServicesListResponse, GetServicesParams | void>({      
       query: (params) => ({
         url: "/services",
         method: "GET",

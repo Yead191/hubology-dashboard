@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { PageLoader } from "@/components/ui/PageLoader";
+import OrdersPage from "./features/orders/OrdersPage";
 
 // Route-level code splitting keeps the initial bundle lean — each page's
 // chunk is only fetched when the admin actually navigates there.
@@ -17,7 +18,7 @@ const ServiceBookingsPage = lazy(() => import("@/features/services/ServiceBookin
 const VendorsPage = lazy(() => import("@/features/vendors/VendorsPage"));
 const UsersPage = lazy(() => import("@/features/users/UsersPage"));
 const StorePage = lazy(() => import("@/features/store/StorePage"));
-const OrdersPage = lazy(() => import("@/features/orders/OrdersPage"));
+const CouponsPage = lazy(() => import("@/features/coupons/CouponsPage"));
 const MembershipPage = lazy(() => import("@/features/membership/MembershipPage"));
 const MembershipFaqPage = lazy(() => import("@/features/membership/MembershipFaqPage"));
 const MembershipSubscribersPage = lazy(() => import("@/features/membership/MembershipSubscribersPage"));
@@ -50,6 +51,7 @@ export default function App() {
             <Route path="users" element={<UsersPage />} />
             <Route path="store" element={<StorePage />} />
             <Route path="store/orders" element={<OrdersPage />} />
+            <Route path="store/coupons" element={<CouponsPage />} />
             <Route path="membership" element={<MembershipPage />} />
             <Route path="membership/faq" element={<MembershipFaqPage />} />
             <Route path="membership/:membershipId/subscribers" element={<MembershipSubscribersPage />} />

@@ -13,6 +13,7 @@ const PAGE_META: { match: (path: string) => boolean; title: string; subtitle?: s
   { match: (p) => p === "/vendors", title: "Vendors", subtitle: "Review applications and manage vendor accounts" },
   { match: (p) => p === "/users", title: "Users", subtitle: "View member accounts and manage access status" },
   { match: (p) => p === "/store/orders", title: "Manage orders", subtitle: "Track purchases and update fulfillment status" },
+  { match: (p) => p === "/store/coupons", title: "Discount coupons", subtitle: "Create promo codes with percentage or fixed discounts" },
   { match: (p) => p === "/store", title: "Store catalog", subtitle: "Curate digital downloads and office essentials" },
   { match: (p) => p.startsWith("/membership/") && p.endsWith("/subscribers"), title: "Plan subscribers", subtitle: "Members subscribed to this membership plan" },
   { match: (p) => p === "/membership/faq", title: "Membership FAQ", subtitle: "Questions and answers for user and vendor membership pages" },
