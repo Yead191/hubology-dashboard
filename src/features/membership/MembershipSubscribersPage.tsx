@@ -130,6 +130,27 @@ export default function MembershipSubscribersPage() {
       ),
     },
     {
+      title: "Trial",
+      key: "trial",
+      responsive: ["md"],
+      render: (_, record) => {
+        if (!record.is_trial) {
+          return <span className="text-mist-600">—</span>;
+        }
+        return (
+          <div>
+            <StatusTag tone="gold">Trial</StatusTag>
+            <div className="mt-1.5 text-xs text-mist-400">
+              {record.trial_period_days ?? 0} days
+              {record.trial_end_date
+                ? ` · ends ${formatDate(record.trial_end_date)}`
+                : ""}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
       title: "Status",
       key: "status",
       render: (_, record) => (
@@ -200,6 +221,9 @@ export default function MembershipSubscribersPage() {
                 {plan?.tagline ??
                   "Members currently subscribed to this membership plan."}
                 {plan ? ` · ${recurringLabelMap[plan.recurring]} billing` : ""}
+                {plan?.has_trial
+                  ? ` · ${plan.trial_period_days ?? 0}-day trial offered`
+                  : ""}
               </p>
             </div>
           </div>

@@ -319,6 +319,11 @@ function PlanCard({
             <StatusTag tone={plan.type === "user" ? "violet" : "info"}>
               {membershipTypeLabelMap[plan.type]}
             </StatusTag>
+            {plan.has_trial && (
+              <StatusTag tone="gold">
+                {plan.trial_period_days ?? 0}-day trial
+              </StatusTag>
+            )}
           </div>
           <p className="mt-1.5 text-sm leading-relaxed text-mist-400">{plan.tagline}</p>
         </div>
@@ -343,6 +348,9 @@ function PlanCard({
       <div className="relative mt-1 text-xs text-mist-500">
         {recurringLabelMap[plan.recurring]}
         {plan.interval > 1 ? ` · every ${plan.interval} ${plan.recurring}s` : ""}
+        {plan.has_trial
+          ? ` · ${plan.trial_period_days ?? 0}-day free trial`
+          : ""}
       </div>
 
       <ul className="relative mt-5 flex-1 space-y-2.5">

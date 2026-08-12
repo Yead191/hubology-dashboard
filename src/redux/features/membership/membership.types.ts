@@ -12,6 +12,8 @@ export interface ApiMembership {
   featured: boolean;
   highlight: string;
   features: string[];
+  has_trial?: boolean;
+  trial_period_days?: number;
   productId?: string;
   priceId?: string;
   paymentUrl?: string;
@@ -51,6 +53,8 @@ export interface MembershipFormPayload {
   highlight: string;
   type: MembershipType;
   features: string[];
+  has_trial: boolean;
+  trial_period_days: number;
 }
 
 export interface MembershipMutationResponse {
@@ -83,6 +87,9 @@ export interface ApiSubscriber {
   end_date: string;
   price: number;
   features: string[];
+  is_trial?: boolean;
+  trial_period_days?: number;
+  trial_end_date?: string;
   payment_intent_id?: string;
   trxId?: string;
   createdAt: string;

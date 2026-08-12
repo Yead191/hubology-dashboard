@@ -17,6 +17,8 @@ interface FormValues {
   featured: boolean;
   highlight: string;
   features: string[];
+  has_trial: boolean;
+  trial_period_days: number;
 }
 
 export function MembershipFormModal({
@@ -49,6 +51,8 @@ export function MembershipFormModal({
         featured: initial.featured,
         highlight: initial.highlight ?? "",
         features: initial.features?.length ? initial.features : [""],
+        has_trial: !!initial.has_trial,
+        trial_period_days: initial.trial_period_days ?? 0,
       });
     } else {
       form.resetFields();
@@ -58,9 +62,13 @@ export function MembershipFormModal({
         featured: false,
         highlight: "",
         features: [""],
+        has_trial: false,
+        trial_period_days: 0,
       });
     }
   }, [open, initial, form]);
+
+  const hasTrial = Form.useWatch("has_trial", form);
 
   const handleFinish = (values: FormValues) => {
     onSubmit({
@@ -73,6 +81,8 @@ export function MembershipFormModal({
       highlight: values.highlight?.trim() ?? "",
       type,
       features: values.features.map((f) => f.trim()).filter(Boolean),
+      has_trial: !!values.has_trial,
+      trial_period_days: values.has_trial ? values.trial_period_days ?? 0 : 0,
     });
   };
 
@@ -119,6 +129,37 @@ export function MembershipFormModal({
           <Form.Item label="Featured" name="featured" valuePropName="checked">
             <Switch />
           </Form.Item>
+        </div>
+
+        <div className="mb-4 rounded-xl border border-navy-700/60 bg-navy-800/30 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium text-cloud-100">Free trial</div>
+              <p className="mt-0.5 text-xs text-mist-500">
+                Let new subscribers try this plan before billing starts.
+              </p>
+            </div>
+            <Form.Item name="has_trial" valuePropName="checked" className="mb-0!">
+              <Switch
+                onChange={(checked) => {
+                  if (!checked) form.setFieldValue("trial_period_days", 0);
+                }}
+              />
+            </Form.Item>
+          </div>
+          {hasTrial && (
+            <Form.Item
+              className="mb-0! mt-4!"
+              label="Trial period (days)"
+              name="trial_period_days"
+              rules={[
+                { required: true, message: "Enter trial days" },
+                { type: "number", min: 1, message: "At least 1 day" },
+              ]}
+            >
+              <InputNumber min={1} max={365} className="w-full!" placeholder="14" />
+            </Form.Item>
+          )}
         </div>
 
         <Form.List name="features">
