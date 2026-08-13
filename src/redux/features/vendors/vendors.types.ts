@@ -67,6 +67,32 @@ export interface VendorMutationResponse {
   data?: ApiVendor;
 }
 
+export interface CreateVendorProfileInput {
+  jobTitle: string;
+  contactNo: string;
+  bio: string;
+  expertise: string[];
+  yearsExperience: string;
+  degree: string;
+  linkedin: string;
+  hourlyRate: number;
+  availability: string;
+  consultationTypes: string[];
+  applicationStatus?: string;
+}
+
+export interface CreateVendorPayload {
+  name: string;
+  email: string;
+  password: string;
+  company: string;
+  interest: string;
+  status: VendorAccountStatus;
+  verified: boolean;
+  vendorProfile: CreateVendorProfileInput;
+  imageFile?: File | null;
+}
+
 export const VENDOR_STATUS_OPTIONS: VendorAccountStatus[] = [
   "pending",
   "active",
@@ -75,12 +101,14 @@ export const VENDOR_STATUS_OPTIONS: VendorAccountStatus[] = [
 ];
 
 export const VENDOR_AVAILABILITY_OPTIONS = [
-
   "Full Time",
   "Part Time",
+  "Project Based",
   "Weekends Only",
   "Limited",
 ] as const;
+
+export const VENDOR_CONSULTATION_TYPES = ["Online", "Onsite"] as const;
 
 export const VENDOR_HOURLY_RATE_RANGES = [
   { label: "$0 – $50", value: "0-50" },

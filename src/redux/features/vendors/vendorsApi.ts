@@ -30,6 +30,15 @@ export const vendorsApi = baseApi.injectEndpoints({
           : [{ type: "Vendors", id: "LIST" }],
     }),
 
+    createVendor: builder.mutation<VendorMutationResponse, FormData>({
+      query: (body) => ({
+        url: "/vendor/create",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "Vendors", id: "LIST" }, "Dashboard"],
+    }),
+
     changeVendorStatus: builder.mutation<
       VendorMutationResponse,
       { id: string; body: ChangeVendorStatusPayload }
@@ -59,6 +68,7 @@ export const vendorsApi = baseApi.injectEndpoints({
 
 export const {
   useGetVendorsQuery,
+  useCreateVendorMutation,
   useChangeVendorStatusMutation,
   useDeleteVendorMutation,
 } = vendorsApi;

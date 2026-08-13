@@ -7,6 +7,7 @@ import {
   TeamOutlined,
   ClockCircleOutlined,
   CrownOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import { toast } from "sonner";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -20,14 +21,17 @@ import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { toFileUrl } from "@/config";
 import {
   useChangeVendorStatusMutation,
+  useCreateVendorMutation,
   useDeleteVendorMutation,
   useGetVendorsQuery,
 } from "@/redux/features/vendors/vendorsApi";
+import { buildVendorFormData } from "@/redux/features/vendors/buildVendorFormData";
 import {
   VENDOR_AVAILABILITY_OPTIONS,
   VENDOR_HOURLY_RATE_RANGES,
   VENDOR_STATUS_OPTIONS,
   type ApiVendor,
+  type CreateVendorPayload,
   type VendorAccountStatus,
 } from "@/redux/features/vendors/vendors.types";
 import { subscriptionStatusToneMap } from "@/features/users/statusMaps";
@@ -35,6 +39,7 @@ import { statusDotClassMap, statusLabelMap } from "./statusMaps";
 import { VendorProfileModal } from "./components/VendorProfileModal";
 import { VendorStatusSelect } from "./components/VendorStatusSelect";
 import { VendorRejectModal } from "./components/VendorRejectModal";
+import { CreateVendorModal } from "./components/CreateVendorModal";
 
 type StatusTab = VendorAccountStatus | "all";
 
@@ -60,6 +65,7 @@ export default function VendorsPage() {
   const [limit, setLimit] = useState(10);
   const [viewing, setViewing] = useState<ApiVendor | null>(null);
   const [rejecting, setRejecting] = useState<ApiVendor | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   useEffect(() => {
     setPage(1);
@@ -88,6 +94,7 @@ export default function VendorsPage() {
     hourlyRateRange: hourlyRateRange || undefined,
   });
 
+  const [createVendor, { isLoading: isCreating }] = useCreateVendorMutation();
   const [changeStatus, { isLoading: isChangingStatus }] = useChangeVendorStatusMutation();
   const [deleteVendor] = useDeleteVendorMutation();
 
@@ -103,6 +110,18 @@ export default function VendorsPage() {
       toast.error("Couldn't delete vendor", { description: getErrorMessage(error) });
     }
   });
+
+  const handleCreateVendor = async (payload: CreateVendorPayload) => {
+    try {
+      await createVendor(buildVendorFormData(payload)).unwrap();
+      toast.success("Vendor created", {
+        description: `${payload.name} can now sign in with the credentials you set.`,
+      });
+      setCreateOpen(false);
+    } catch (error) {
+      toast.error("Couldn't create vendor", { description: getErrorMessage(error) });
+    }
+  };
 
   const applyStatusChange = (
     vendor: ApiVendor,
@@ -292,12 +311,22 @@ export default function VendorsPage() {
             </p>
           </div>
         </div>
-        {pendingCount > 0 && (
-          <div className="rounded-2xl border border-warning/25 bg-warning/10 px-4 py-3 text-sm">
-            <div className="font-semibold text-warning">{pendingCount} pending</div>
-            <div className="text-xs text-mist-400">Awaiting your review</div>
-          </div>
-        )}
+        <div className="flex flex-wrap items-center gap-3">
+          {pendingCount > 0 && (
+            <div className="rounded-2xl border border-warning/25 bg-warning/10 px-4 py-3 text-sm">
+              <div className="font-semibold text-warning">{pendingCount} pending</div>
+              <div className="text-xs text-mist-400">Awaiting your review</div>
+            </div>
+          )}
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            className="btn-gradient border-0!"
+            onClick={() => setCreateOpen(true)}
+          >
+            New vendor
+          </Button>
+        </div>
       </div>
 
       <GlassCard flat className="mb-4" padded={false}>
@@ -375,6 +404,8 @@ export default function VendorsPage() {
             icon={<UserOutlined />}
             title="No vendors in this view"
             description="Try another status tab or clear your search and filters."
+            actionLabel="New vendor"
+            onAction={() => setCreateOpen(true)}
           />
         ) : (
           <Table
@@ -396,6 +427,16 @@ export default function VendorsPage() {
           />
         )}
       </GlassCard>
+
+      <CreateVendorModal
+        open={createOpen}
+        loading={isCreating}
+        onCancel={() => {
+          if (isCreating) return;
+          setCreateOpen(false);
+        }}
+        onSubmit={handleCreateVendor}
+      />
 
       <VendorProfileModal
         vendor={viewing}
