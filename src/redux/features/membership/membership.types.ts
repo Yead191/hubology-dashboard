@@ -1,5 +1,6 @@
 export type MembershipType = "user" | "vendor";
-export type MembershipRecurring = "month" | "year";
+export type MembershipRecurring = "week" | "month" | "year";
+export type SubscriberRecurring = "week" | "month" | "year" | "free";
 
 export interface ApiMembership {
   _id: string;
@@ -14,6 +15,7 @@ export interface ApiMembership {
   features: string[];
   has_trial?: boolean;
   trial_period_days?: number;
+  is_auto_renew?: boolean;
   productId?: string;
   priceId?: string;
   paymentUrl?: string;
@@ -55,6 +57,7 @@ export interface MembershipFormPayload {
   features: string[];
   has_trial: boolean;
   trial_period_days: number;
+  is_auto_renew: boolean;
 }
 
 export interface MembershipMutationResponse {
@@ -81,7 +84,8 @@ export interface ApiSubscriber {
   name: string;
   plan: SubscriberPlan;
   /** Backend field spelling — kept as-is. */
-  recuring: string;
+  recuring?: SubscriberRecurring | string;
+  auto_renew?: boolean;
   status: string;
   start_date: string;
   end_date: string;

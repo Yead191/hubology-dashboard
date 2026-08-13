@@ -20,7 +20,12 @@ import {
   useGetSubscribersQuery,
 } from "@/redux/features/membership/membershipApi";
 import type { ApiSubscriber } from "@/redux/features/membership/membership.types";
-import { recurringLabelMap, subscriberStatusToneMap } from "./statusMaps";
+import {
+  formatSubscriberRecurring,
+  recurringLabelMap,
+  recurringShortLabelMap,
+  subscriberStatusToneMap,
+} from "./statusMaps";
 
 export default function MembershipSubscribersPage() {
   const { membershipId = "" } = useParams<{ membershipId: string }>();
@@ -98,8 +103,8 @@ export default function MembershipSubscribersPage() {
           <div className="font-medium text-cloud-100">
             {record.name || record.plan?.name}
           </div>
-          <div className="text-xs capitalize text-mist-400">
-            {record.recuring}
+          <div className="text-xs text-mist-400">
+            {formatSubscriberRecurring(record.recuring)}
           </div>
         </div>
       ),
@@ -110,9 +115,11 @@ export default function MembershipSubscribersPage() {
       render: (_, record) => (
         <span className="font-display font-semibold text-cloud-100">
           {formatCurrency(record.price)}
-          <span className="text-xs font-normal text-mist-500">
-            /{record.recuring}
-          </span>
+          {record.recuring && record.recuring !== "free" && (
+            <span className="text-xs font-normal text-mist-500">
+              /{record.recuring === "week" ? "wk" : record.recuring === "year" ? "yr" : "mo"}
+            </span>
+          )}
         </span>
       ),
     },
@@ -149,6 +156,17 @@ export default function MembershipSubscribersPage() {
           </div>
         );
       },
+    },
+    {
+      title: "Auto renew",
+      key: "auto_renew",
+      responsive: ["lg"],
+      render: (_, record) =>
+        record.auto_renew ? (
+          <StatusTag tone="success">On</StatusTag>
+        ) : (
+          <StatusTag tone="neutral">Off</StatusTag>
+        ),
     },
     {
       title: "Status",
@@ -213,14 +231,21 @@ export default function MembershipSubscribersPage() {
                 {plan && (
                   <StatusTag tone="gold">
                     {formatCurrency(plan.price)}/
-                    {plan.recurring === "year" ? "yr" : "mo"}
+                    {recurringShortLabelMap[plan.recurring] ?? plan.recurring}
+                  </StatusTag>
+                )}
+                {plan && (
+                  <StatusTag tone={plan.is_auto_renew !== false ? "success" : "neutral"}>
+                    {plan.is_auto_renew !== false ? "Auto renew" : "Manual renew"}
                   </StatusTag>
                 )}
               </div>
               <p className="mt-1 max-w-xl text-sm text-mist-400">
                 {plan?.tagline ??
                   "Members currently subscribed to this membership plan."}
-                {plan ? ` · ${recurringLabelMap[plan.recurring]} billing` : ""}
+                {plan
+                  ? ` · ${recurringLabelMap[plan.recurring] ?? plan.recurring} billing`
+                  : ""}
                 {plan?.has_trial
                   ? ` · ${plan.trial_period_days ?? 0}-day trial offered`
                   : ""}

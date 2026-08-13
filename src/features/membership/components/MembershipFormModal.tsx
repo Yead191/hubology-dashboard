@@ -19,6 +19,7 @@ interface FormValues {
   features: string[];
   has_trial: boolean;
   trial_period_days: number;
+  is_auto_renew: boolean;
 }
 
 export function MembershipFormModal({
@@ -53,6 +54,7 @@ export function MembershipFormModal({
         features: initial.features?.length ? initial.features : [""],
         has_trial: !!initial.has_trial,
         trial_period_days: initial.trial_period_days ?? 0,
+        is_auto_renew: initial.is_auto_renew !== false,
       });
     } else {
       form.resetFields();
@@ -64,6 +66,7 @@ export function MembershipFormModal({
         features: [""],
         has_trial: false,
         trial_period_days: 0,
+        is_auto_renew: true,
       });
     }
   }, [open, initial, form]);
@@ -83,6 +86,7 @@ export function MembershipFormModal({
       features: values.features.map((f) => f.trim()).filter(Boolean),
       has_trial: !!values.has_trial,
       trial_period_days: values.has_trial ? values.trial_period_days ?? 0 : 0,
+      is_auto_renew: values.is_auto_renew !== false,
     });
   };
 
@@ -112,6 +116,7 @@ export function MembershipFormModal({
           <Form.Item label="Billing" name="recurring" rules={[{ required: true }]}>
             <Select
               options={[
+                { label: "Weekly", value: "week" },
                 { label: "Monthly", value: "month" },
                 { label: "Yearly", value: "year" },
               ]}
@@ -129,6 +134,20 @@ export function MembershipFormModal({
           <Form.Item label="Featured" name="featured" valuePropName="checked">
             <Switch />
           </Form.Item>
+        </div>
+
+        <div className="mb-4 rounded-xl border border-navy-700/60 bg-navy-800/30 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium text-cloud-100">Auto renew</div>
+              <p className="mt-0.5 text-xs text-mist-500">
+                Automatically renew subscriptions when the billing period ends.
+              </p>
+            </div>
+            <Form.Item name="is_auto_renew" valuePropName="checked" className="mb-0!">
+              <Switch />
+            </Form.Item>
+          </div>
         </div>
 
         <div className="mb-4 rounded-xl border border-navy-700/60 bg-navy-800/30 p-4">
@@ -227,6 +246,7 @@ export function BillingSegmented({
       onChange={(v) => onChange(v as MembershipRecurring | "all")}
       options={[
         { label: "All", value: "all" },
+        { label: "Weekly", value: "week" },
         { label: "Monthly", value: "month" },
         { label: "Yearly", value: "year" },
       ]}

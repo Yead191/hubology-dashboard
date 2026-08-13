@@ -31,7 +31,7 @@ import type {
   MembershipRecurring,
   MembershipType,
 } from "@/redux/features/membership/membership.types";
-import { membershipTypeLabelMap, recurringLabelMap } from "./statusMaps";
+import { membershipTypeLabelMap, recurringLabelMap, recurringShortLabelMap } from "./statusMaps";
 import { BillingSegmented, MembershipFormModal } from "./components/MembershipFormModal";
 
 function getErrorMessage(error: unknown) {
@@ -324,6 +324,11 @@ function PlanCard({
                 {plan.trial_period_days ?? 0}-day trial
               </StatusTag>
             )}
+            {plan.is_auto_renew !== false ? (
+              <StatusTag tone="success">Auto renew</StatusTag>
+            ) : (
+              <StatusTag tone="neutral">Manual renew</StatusTag>
+            )}
           </div>
           <p className="mt-1.5 text-sm leading-relaxed text-mist-400">{plan.tagline}</p>
         </div>
@@ -342,15 +347,16 @@ function PlanCard({
           {formatCurrency(plan.price)}
         </span>
         <span className="pb-1.5 text-sm text-mist-400">
-          /{plan.recurring === "year" ? "yr" : "mo"}
+          /{recurringShortLabelMap[plan.recurring] ?? plan.recurring}
         </span>
       </div>
       <div className="relative mt-1 text-xs text-mist-500">
-        {recurringLabelMap[plan.recurring]}
+        {recurringLabelMap[plan.recurring] ?? plan.recurring}
         {plan.interval > 1 ? ` · every ${plan.interval} ${plan.recurring}s` : ""}
         {plan.has_trial
           ? ` · ${plan.trial_period_days ?? 0}-day free trial`
           : ""}
+        {plan.is_auto_renew === false ? " · no auto renew" : ""}
       </div>
 
       <ul className="relative mt-5 flex-1 space-y-2.5">
