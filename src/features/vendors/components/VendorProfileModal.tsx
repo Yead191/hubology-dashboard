@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Avatar, Button, Modal } from "antd";
+import { Avatar, Button, Modal, Switch, Tooltip } from "antd";
 import {
   MailOutlined,
   PhoneOutlined,
@@ -13,6 +13,7 @@ import {
   BookOutlined,
   CrownOutlined,
   CalendarOutlined,
+  QuestionCircleOutlined,
 } from "@ant-design/icons";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -29,15 +30,19 @@ export function VendorProfileModal({
   vendor,
   open,
   updating,
+  visibilityUpdating,
   onClose,
   onStatusChange,
+  onVisibilityChange,
   onDelete,
 }: {
   vendor: ApiVendor | null;
   open: boolean;
   updating?: boolean;
+  visibilityUpdating?: boolean;
   onClose: () => void;
   onStatusChange: (status: VendorAccountStatus) => void;
+  onVisibilityChange: (isProfileVisible: boolean) => void;
   onDelete: (vendor: ApiVendor) => void;
 }) {
   if (!vendor) return null;
@@ -306,27 +311,49 @@ export function VendorProfileModal({
         )}
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-navy-700/60 bg-navy-900/50 px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
-        <div className="min-w-0 flex-1">
-          <div className="mb-1.5 text-xs font-medium uppercase tracking-wide text-mist-600">
-            Account status
+      <div className="flex flex-col gap-3 border-t border-navy-700/60 bg-navy-900/50 px-6 py-4 md:px-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <div className="mb-1.5 text-xs font-medium uppercase tracking-wide text-mist-600">
+              Account status
+            </div>
+            <VendorStatusSelect
+              size="middle"
+              value={vendor.status}
+              disabled={updating}
+              onChange={onStatusChange}
+            />
           </div>
-          <VendorStatusSelect
-            size="middle"
-            value={vendor.status}
-            disabled={updating}
-            onChange={onStatusChange}
-          />
+          <div className="flex gap-2 sm:shrink-0">
+            <Button onClick={onClose}>Close</Button>
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => onDelete(vendor)}
+            >
+              Delete account
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2 sm:shrink-0">
-          <Button onClick={onClose}>Close</Button>
-          <Button
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => onDelete(vendor)}
-          >
-            Delete account
-          </Button>
+
+        <div className="flex items-start justify-between gap-3 rounded-xl border border-navy-700/60 bg-navy-800/40 px-4 py-3">
+          <div>
+            <div className="flex items-center gap-1.5 text-sm font-medium text-cloud-100">
+              Show on vendor directory
+              <Tooltip title="Enable this to make the profile visible on the public vendor page even if they don't have an active subscription.">
+                <QuestionCircleOutlined className="text-mist-500" />
+              </Tooltip>
+            </div>
+            <p className="mt-0.5 text-xs text-mist-500">
+              Visible even without a subscription.
+            </p>
+          </div>
+          <Switch
+            checked={!!profile?.isProfileVisible}
+            loading={visibilityUpdating}
+            disabled={visibilityUpdating}
+            onChange={onVisibilityChange}
+          />
         </div>
       </div>
     </Modal>

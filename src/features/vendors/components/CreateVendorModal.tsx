@@ -9,8 +9,9 @@ import {
   Button,
   Upload,
   Segmented,
+  Tooltip,
 } from "antd";
-import { InboxOutlined, TeamOutlined } from "@ant-design/icons";
+import { InboxOutlined, QuestionCircleOutlined, TeamOutlined } from "@ant-design/icons";
 import type { UploadFile } from "antd/es/upload/interface";
 import { EXPERT_CATEGORIES } from "@/lib/constants";
 import {
@@ -39,6 +40,7 @@ interface FormValues {
   hourlyRate: number;
   availability: string;
   consultationTypes: string[];
+  isProfileVisible: boolean;
 }
 
 export function CreateVendorModal({
@@ -65,6 +67,7 @@ export function CreateVendorModal({
       expertise: [],
       consultationTypes: ["Online"],
       availability: "Project Based",
+      isProfileVisible: false,
     });
     setImageList([]);
     setImageError(null);
@@ -97,6 +100,7 @@ export function CreateVendorModal({
         hourlyRate: values.hourlyRate,
         availability: values.availability,
         consultationTypes: values.consultationTypes ?? [],
+        isProfileVisible: !!values.isProfileVisible,
       },
     });
   };
@@ -323,6 +327,26 @@ export function CreateVendorModal({
         <Form.Item name="linkedin" label={<span className="text-mist-400">LinkedIn (optional)</span>}>
           <Input placeholder="https://linkedin.com/in/johndoe" />
         </Form.Item>
+
+        <div className="mb-5 rounded-xl border border-navy-700/60 bg-navy-800/30 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-1.5 text-sm font-medium text-cloud-100">
+                Show on vendor directory
+                <Tooltip title="Enable this to make the profile visible on the public vendor page even if they don't have an active subscription.">
+                  <QuestionCircleOutlined className="text-mist-500" />
+                </Tooltip>
+              </div>
+              <p className="mt-0.5 text-xs text-mist-500">
+                Enabling this will make this profile visible on the vendor page even if they don't
+                have a subscription.
+              </p>
+            </div>
+            <Form.Item name="isProfileVisible" valuePropName="checked" className="mb-0!">
+              <Switch />
+            </Form.Item>
+          </div>
+        </div>
 
         <div className="flex justify-end gap-2 border-t border-navy-700/60 pt-4">
           <Button onClick={onCancel} disabled={loading}>

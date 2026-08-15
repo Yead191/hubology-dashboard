@@ -14,6 +14,7 @@ export interface VendorProfile {
   availability: string;
   consultationTypes: string[];
   applicationStatus?: string;
+  isProfileVisible?: boolean;
 }
 
 export interface ApiVendor {
@@ -61,6 +62,10 @@ export interface ChangeVendorStatusPayload {
   rejectionReason?: string;
 }
 
+export interface ChangeProfileVisibilityPayload {
+  isProfileVisible: boolean;
+}
+
 export interface VendorMutationResponse {
   success: boolean;
   message: string;
@@ -79,6 +84,7 @@ export interface CreateVendorProfileInput {
   availability: string;
   consultationTypes: string[];
   applicationStatus?: string;
+  isProfileVisible: boolean;
 }
 
 export interface CreateVendorPayload {

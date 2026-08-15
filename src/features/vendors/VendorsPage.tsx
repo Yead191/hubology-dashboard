@@ -20,6 +20,7 @@ import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { toFileUrl } from "@/config";
 import {
+  useChangeProfileVisibilityMutation,
   useChangeVendorStatusMutation,
   useCreateVendorMutation,
   useDeleteVendorMutation,
@@ -96,6 +97,8 @@ export default function VendorsPage() {
 
   const [createVendor, { isLoading: isCreating }] = useCreateVendorMutation();
   const [changeStatus, { isLoading: isChangingStatus }] = useChangeVendorStatusMutation();
+  const [changeVisibility, { isLoading: isChangingVisibility }] =
+    useChangeProfileVisibilityMutation();
   const [deleteVendor] = useDeleteVendorMutation();
 
   const vendors = data?.data ?? [];
@@ -121,6 +124,35 @@ export default function VendorsPage() {
     } catch (error) {
       toast.error("Couldn't create vendor", { description: getErrorMessage(error) });
     }
+  };
+
+  const handleVisibilityChange = (vendor: ApiVendor, isProfileVisible: boolean) => {
+    const promise = changeVisibility({
+      id: vendor._id,
+      body: { isProfileVisible },
+    })
+      .unwrap()
+      .then(() => {
+        setViewing((prev) =>
+          prev && prev._id === vendor._id
+            ? {
+                ...prev,
+                vendorProfile: {
+                  ...prev.vendorProfile,
+                  isProfileVisible,
+                },
+              }
+            : prev
+        );
+      });
+
+    toast.promise(promise, {
+      loading: isProfileVisible ? "Making profile visible…" : "Hiding profile…",
+      success: isProfileVisible
+        ? `${vendor.name} is now visible on the vendor page.`
+        : `${vendor.name} is hidden from the vendor page.`,
+      error: (err) => getErrorMessage(err),
+    });
   };
 
   const applyStatusChange = (
@@ -442,10 +474,15 @@ export default function VendorsPage() {
         vendor={viewing}
         open={!!viewing}
         updating={isChangingStatus}
+        visibilityUpdating={isChangingVisibility}
         onClose={() => setViewing(null)}
         onStatusChange={(status) => {
           if (!viewing) return;
           handleStatusChange(viewing, status);
+        }}
+        onVisibilityChange={(isProfileVisible) => {
+          if (!viewing) return;
+          handleVisibilityChange(viewing, isProfileVisible);
         }}
         onDelete={(vendor) => {
           setViewing(null);

@@ -1,5 +1,6 @@
 import { baseApi } from "../../api/baseApi";
 import type {
+  ChangeProfileVisibilityPayload,
   ChangeVendorStatusPayload,
   GetVendorsParams,
   VendorMutationResponse,
@@ -39,6 +40,21 @@ export const vendorsApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: "Vendors", id: "LIST" }, "Dashboard"],
     }),
 
+    changeProfileVisibility: builder.mutation<
+      VendorMutationResponse,
+      { id: string; body: ChangeProfileVisibilityPayload }
+    >({
+      query: ({ id, body }) => ({
+        url: `/vendor/change-profile-visibility/${id}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (_res, _err, arg) => [
+        { type: "Vendors", id: arg.id },
+        { type: "Vendors", id: "LIST" },
+      ],
+    }),
+
     changeVendorStatus: builder.mutation<
       VendorMutationResponse,
       { id: string; body: ChangeVendorStatusPayload }
@@ -69,6 +85,7 @@ export const vendorsApi = baseApi.injectEndpoints({
 export const {
   useGetVendorsQuery,
   useCreateVendorMutation,
+  useChangeProfileVisibilityMutation,
   useChangeVendorStatusMutation,
   useDeleteVendorMutation,
 } = vendorsApi;
