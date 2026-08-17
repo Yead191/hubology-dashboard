@@ -19,6 +19,10 @@ import { getImageUrl } from "@/lib/getImageUrl";
 import { useGetTransactionsQuery } from "@/redux/features/transactions/transactionsApi";
 import type { ApiTransaction } from "@/redux/features/transactions/transactions.types";
 import {
+  formatTransactionLabel,
+  isMembershipCategory,
+  isServiceCategory,
+  isShopCategory,
   transactionCategoryToneMap,
   transactionStatusToneMap,
   transactionTypeToneMap,
@@ -26,9 +30,9 @@ import {
 import { TransactionDetailModal } from "./components/TransactionDetailModal";
 
 function categoryIcon(category: string) {
-  if (category === "Membership") return <CrownOutlined />;
-  if (category === "Shop") return <ShoppingOutlined />;
-  if (category === "Service") return <AppstoreOutlined />;
+  if (isMembershipCategory(category)) return <CrownOutlined />;
+  if (isShopCategory(category)) return <ShoppingOutlined />;
+  if (isServiceCategory(category)) return <AppstoreOutlined />;
   return <DollarOutlined />;
 }
 
@@ -66,7 +70,7 @@ export default function TransactionsPage() {
           onClick={() => setViewing(record)}
         >
           <code className="font-mono text-xs font-medium text-cloud-100 transition hover:text-violet-glow">
-            {record._id.slice(0, 10)}…
+            {record.transaction_id || `${record._id.slice(0, 10)}…`}
           </code>
           <div className="mt-0.5 text-[11px] text-mist-500">
             {record.createdAt ? formatDate(record.createdAt) : "—"}
@@ -103,7 +107,7 @@ export default function TransactionsPage() {
           tone={transactionCategoryToneMap[record.category] ?? "neutral"}
           icon={categoryIcon(record.category)}
         >
-          {record.category}
+          {formatTransactionLabel(record.category)}
         </StatusTag>
       ),
     },
@@ -113,10 +117,13 @@ export default function TransactionsPage() {
       render: (_, record) => (
         <div>
           <div className="font-display font-semibold text-cloud-100">
-            {formatCurrency(record.total_price)}
+            {formatCurrency(record.total_price ?? 0)}
           </div>
           <div className="text-[11px] text-mist-500">
-            Fee {formatCurrency(record.platform_fee)}
+            Received {formatCurrency(record.payment_received ?? 0)}
+            {(record.discount_amount ?? 0) > 0
+              ? ` · −${formatCurrency(record.discount_amount ?? 0)}`
+              : ""}
           </div>
         </div>
       ),
@@ -127,7 +134,7 @@ export default function TransactionsPage() {
       responsive: ["lg"],
       render: (_, record) => (
         <StatusTag tone={transactionTypeToneMap[record.type] ?? "neutral"}>
-          {record.type}
+          {formatTransactionLabel(record.type)}
         </StatusTag>
       ),
     },
@@ -136,7 +143,7 @@ export default function TransactionsPage() {
       key: "status",
       render: (_, record) => (
         <StatusTag tone={transactionStatusToneMap[record.status] ?? "neutral"}>
-          {record.status}
+          {formatTransactionLabel(record.status)}
         </StatusTag>
       ),
     },
@@ -191,7 +198,7 @@ export default function TransactionsPage() {
       <GlassCard flat className="mb-4">
         <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
           <SearchInput
-            placeholder="Search by transaction ID…"
+            placeholder="Search by transaction ID, name, or email…"
             value={search}
             onChange={setSearch}
             className="sm:w-80!"

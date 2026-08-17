@@ -14,18 +14,31 @@ import {
 import { StatusTag } from "@/components/ui/StatusTag";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { getImageUrl } from "@/lib/getImageUrl";
-import type { ApiTransaction } from "@/redux/features/transactions/transactions.types";
+import type {
+  ApiTransaction,
+  TransactionOrderRef,
+} from "@/redux/features/transactions/transactions.types";
 import {
+  formatTransactionLabel,
+  isMembershipCategory,
+  isServiceCategory,
+  isShopCategory,
   transactionCategoryToneMap,
   transactionStatusToneMap,
   transactionTypeToneMap,
 } from "../statusMaps";
 
 function categoryIcon(category: string) {
-  if (category === "Membership") return <CrownOutlined />;
-  if (category === "Shop") return <ShoppingOutlined />;
-  if (category === "Service") return <AppstoreOutlined />;
+  if (isMembershipCategory(category)) return <CrownOutlined />;
+  if (isShopCategory(category)) return <ShoppingOutlined />;
+  if (isServiceCategory(category)) return <AppstoreOutlined />;
   return <DollarOutlined />;
+}
+
+function getOrderId(order?: string | TransactionOrderRef | null) {
+  if (!order) return null;
+  if (typeof order === "string") return order;
+  return order.order_id || order._id;
 }
 
 export function TransactionDetailModal({
@@ -51,6 +64,10 @@ export function TransactionDetailModal({
       message.error(`Couldn't copy ${label.toLowerCase()}`);
     }
   };
+
+  const orderId = getOrderId(transaction.order);
+  const hasDiscount =
+    (transaction.discount_amount ?? 0) > 0 || (transaction.discount_percentage ?? 0) > 0;
 
   return (
     <Modal
@@ -84,13 +101,13 @@ export function TransactionDetailModal({
                 tone={transactionCategoryToneMap[transaction.category] ?? "neutral"}
                 icon={categoryIcon(transaction.category)}
               >
-                {transaction.category}
+                {formatTransactionLabel(transaction.category)}
               </StatusTag>
               <StatusTag tone={transactionStatusToneMap[transaction.status] ?? "neutral"}>
-                {transaction.status}
+                {formatTransactionLabel(transaction.status)}
               </StatusTag>
               <StatusTag tone={transactionTypeToneMap[transaction.type] ?? "neutral"}>
-                {transaction.type}
+                {formatTransactionLabel(transaction.type)}
               </StatusTag>
             </div>
             <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-cloud-100">
@@ -106,21 +123,24 @@ export function TransactionDetailModal({
           <div className="rounded-2xl border border-warning/25 bg-warning/10 px-4 py-3 text-right">
             <div className="text-[11px] uppercase tracking-wide text-mist-500">Amount</div>
             <div className="font-display text-2xl font-semibold text-warning">
-              {formatCurrency(transaction.total_price)}
+              {formatCurrency(transaction.total_price ?? 0)}
+            </div>
+            <div className="mt-0.5 text-[11px] text-mist-500">
+              Received {formatCurrency(transaction.payment_received ?? 0)}
             </div>
           </div>
         </div>
 
         <div className="relative mt-5 flex items-center gap-3 rounded-2xl border border-navy-700/60 bg-navy-800/40 p-3.5">
           <Avatar
-            src={getImageUrl(transaction?.user?.image || "")}
+            src={getImageUrl(transaction.user?.image || "")}
             icon={<UserOutlined />}
             size={48}
             className="bg-violet-600/25! text-violet-glow!"
           />
           <div className="min-w-0">
-            <div className="font-medium text-cloud-100">{transaction?.user?.name || "—"}</div>
-            <div className="truncate text-xs text-mist-400">{transaction?.user?.email || "—"}</div>
+            <div className="font-medium text-cloud-100">{transaction.user?.name || "Deleted user"}</div>
+            <div className="truncate text-xs text-mist-400">{transaction.user?.email || "—"}</div>
           </div>
         </div>
       </div>
@@ -132,24 +152,55 @@ export function TransactionDetailModal({
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <Metric label="Total price" value={formatCurrency(transaction.total_price)} accent />
-          <Metric label="Payment received" value={formatCurrency(transaction.payment_received)} />
-          <Metric label="Platform fee" value={formatCurrency(transaction.platform_fee)} />
+          <Metric label="Total price" value={formatCurrency(transaction.total_price ?? 0)} accent />
+          <Metric
+            label="Payment received"
+            value={formatCurrency(transaction.payment_received ?? 0)}
+          />
+          <Metric
+            label="Platform fee"
+            value={formatCurrency(transaction.platform_fee ?? 0)}
+          />
+          <Metric
+            label="Discount"
+            value={formatCurrency(transaction.discount_amount ?? 0)}
+          />
+          <Metric
+            label="Discount %"
+            value={`${transaction.discount_percentage ?? 0}%`}
+          />
         </div>
 
+        {hasDiscount && (
+          <p className="mt-3 text-xs text-mist-500">
+            A discount of {formatCurrency(transaction.discount_amount ?? 0)} (
+            {transaction.discount_percentage ?? 0}%) was applied to this payment.
+          </p>
+        )}
+
         <div className="mt-4 space-y-2.5">
+          {transaction.transaction_id && (
+            <IdRow
+              label="Payment transaction ID"
+              value={transaction.transaction_id}
+              copied={copiedKey === "ext"}
+              onCopy={() =>
+                copyValue(transaction.transaction_id!, "ext", "Transaction ID")
+              }
+            />
+          )}
           <IdRow
-            label="Transaction ID"
+            label="Record ID"
             value={transaction._id}
             copied={copiedKey === "tx"}
-            onCopy={() => copyValue(transaction._id, "tx", "Transaction ID")}
+            onCopy={() => copyValue(transaction._id, "tx", "Record ID")}
           />
-          {transaction.order && (
+          {orderId && (
             <IdRow
               label="Linked order"
-              value={transaction.order}
+              value={orderId}
               copied={copiedKey === "order"}
-              onCopy={() => copyValue(transaction.order!, "order", "Order ID")}
+              onCopy={() => copyValue(orderId, "order", "Order ID")}
             />
           )}
         </div>

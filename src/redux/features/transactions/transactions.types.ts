@@ -1,4 +1,4 @@
-export type TransactionCategory = "Membership" | "Shop" | "Service";
+export type TransactionCategory = "Membership" | "Shop" | "Service" | string;
 export type TransactionStatus = "Success" | "Failed" | "Pending" | string;
 export type TransactionType = "Credit" | "Debit" | string;
 
@@ -9,19 +9,27 @@ export interface TransactionUser {
   image?: string;
 }
 
+export interface TransactionOrderRef {
+  _id: string;
+  order_id?: string;
+  status?: string;
+}
+
 export interface ApiTransaction {
   _id: string;
-  user: TransactionUser;
+  user?: TransactionUser | null;
   total_price: number;
-  payment_received: number;
-  order?: string | null;
-  platform_fee: number;
+  payment_received?: number;
+  discount_percentage?: number;
+  discount_amount?: number;
+  order?: string | TransactionOrderRef | null;
+  platform_fee?: number;
+  transaction_id?: string | null;
   status: TransactionStatus;
   type: TransactionType;
-  category: TransactionCategory | string;
+  category: TransactionCategory;
   createdAt?: string;
   updatedAt?: string;
-  __v?: number;
 }
 
 export interface PaginationMeta {
@@ -44,8 +52,4 @@ export interface TransactionsListResponse {
   data: ApiTransaction[];
 }
 
-export const TRANSACTION_CATEGORY_OPTIONS: TransactionCategory[] = [
-  "Membership",
-  "Shop",
-  "Service",
-];
+export const TRANSACTION_CATEGORY_OPTIONS = ["Membership", "Shop", "Service"] as const;
