@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Avatar, Button, DatePicker, Select, Table, type TableProps } from "antd";
+import { Avatar, Button, DatePicker, Select, Table, Tooltip, type TableProps } from "antd";
 import {
   EyeOutlined,
-  UserOutlined,
+  DeleteOutlined,
   CalendarOutlined,
   BookOutlined,
 } from "@ant-design/icons";
@@ -14,10 +14,13 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { StatCard } from "@/components/ui/StatCard";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
+import { useConfirmDelete } from "@/hooks/useConfirmDelete";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useGetServicesQuery } from "@/redux/features/services/servicesApi";
 import {
+  useDeleteBookingMutation,
   useGetBookingsQuery,
   useUpdateBookingStatusMutation,
 } from "@/redux/features/bookings/bookingsApi";
@@ -79,6 +82,7 @@ export default function ServiceBookingsPage() {
   });
 
   const [updateStatus, { isLoading: isUpdatingStatus }] = useUpdateBookingStatusMutation();
+  const [deleteBooking] = useDeleteBookingMutation();
 
   const bookings = data?.data ?? [];
   const pagination = data?.pagination;
@@ -93,6 +97,22 @@ export default function ServiceBookingsPage() {
     for (const b of bookings) counts[b.status] += 1;
     return counts;
   }, [bookings]);
+
+  const deleteFlow = useConfirmDelete<ApiBooking>(async (record) => {
+    const promise = deleteBooking(record._id)
+      .unwrap()
+      .then(() => {
+        setViewing((prev) => (prev?._id === record._id ? null : prev));
+      });
+
+    toast.promise(promise, {
+      loading: "Deleting booking…",
+      success: `Booking for ${record.user?.name || "customer"} was deleted.`,
+      error: (err) => getErrorMessage(err),
+    });
+
+    await promise.catch(() => undefined);
+  });
 
   const handleStatusChange = async (id: string, nextStatus: BookingStatus) => {
     try {
@@ -168,11 +188,26 @@ export default function ServiceBookingsPage() {
     {
       title: "",
       key: "actions",
-      width: 100,
+      width: 108,
       render: (_, record) => (
-        <Button size="small" icon={<EyeOutlined />} onClick={() => setViewing(record)}>
-          View
-        </Button>
+        <div className="flex items-center justify-end gap-1">
+          <Tooltip title="View booking">
+            <Button
+              type="text"
+              className="text-mist-400! hover:bg-violet-600/15! hover:text-violet-glow!"
+              icon={<EyeOutlined />}
+              onClick={() => setViewing(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Delete booking">
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => deleteFlow.request(record)}
+            />
+          </Tooltip>
+        </div>
       ),
     },
   ];
@@ -287,6 +322,18 @@ export default function ServiceBookingsPage() {
           if (!viewing) return;
           handleStatusChange(viewing._id, next);
         }}
+      />
+
+      <ConfirmDeleteModal
+        open={deleteFlow.isOpen}
+        title="Delete this booking?"
+        description={`This permanently removes the booking${
+          deleteFlow.target?.user?.name ? ` for ${deleteFlow.target.user.name}` : ""
+        }. This can't be undone.`}
+        confirmLabel="Delete booking"
+        loading={deleteFlow.loading}
+        onConfirm={deleteFlow.confirm}
+        onCancel={deleteFlow.cancel}
       />
     </div>
   );

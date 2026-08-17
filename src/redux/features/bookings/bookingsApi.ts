@@ -45,8 +45,20 @@ export const bookingsApi = baseApi.injectEndpoints({
         { type: "Bookings", id: "LIST" },
       ],
     }),
+
+    deleteBooking: builder.mutation<BookingMutationResponse, string>({
+      query: (id) => ({
+        url: `/bookings/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "Bookings", id: "LIST" }],
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetBookingsQuery, useUpdateBookingStatusMutation } = bookingsApi;
+export const {
+  useGetBookingsQuery,
+  useUpdateBookingStatusMutation,
+  useDeleteBookingMutation,
+} = bookingsApi;

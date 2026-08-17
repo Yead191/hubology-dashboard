@@ -49,7 +49,7 @@ export function ConfirmDeleteModal({
               type="button"
               onClick={onConfirm}
               disabled={loading}
-              className="rounded-lg bg-gradient-to-r from-[#f2617a] to-[#b3273f] px-3.5 py-2 text-sm font-semibold text-white shadow-[0_8px_20px_-8px_rgba(242,97,122,0.7)] transition hover:brightness-110 disabled:opacity-60"
+              className="rounded-lg bg-linear-to-r from-danger to-[#b3273f] px-3.5 py-2 text-sm font-semibold text-white shadow-[0_8px_20px_-8px_rgba(242,97,122,0.7)] transition hover:brightness-110 disabled:opacity-60"
             >
               {loading ? "Deleting…" : confirmLabel}
             </button>
