@@ -19,6 +19,8 @@ const VendorsPage = lazy(() => import("@/features/vendors/VendorsPage"));
 const UsersPage = lazy(() => import("@/features/users/UsersPage"));
 const StorePage = lazy(() => import("@/features/store/StorePage"));
 const CouponsPage = lazy(() => import("@/features/coupons/CouponsPage"));
+const RefundsPage = lazy(() => import("@/features/refunds/RefundsPage"));
+const RefundDetailPage = lazy(() => import("@/features/refunds/RefundDetailPage"));
 const MembershipPage = lazy(() => import("@/features/membership/MembershipPage"));
 const MembershipFaqPage = lazy(() => import("@/features/membership/MembershipFaqPage"));
 const MembershipSubscribersPage = lazy(() => import("@/features/membership/MembershipSubscribersPage"));
@@ -52,6 +54,8 @@ export default function App() {
             <Route path="store" element={<StorePage />} />
             <Route path="store/orders" element={<OrdersPage />} />
             <Route path="store/coupons" element={<CouponsPage />} />
+            <Route path="store/refunds" element={<RefundsPage />} />
+            <Route path="store/refunds/:refundId" element={<RefundDetailPage />} />
             <Route path="membership" element={<MembershipPage />} />
             <Route path="membership/faq" element={<MembershipFaqPage />} />
             <Route path="membership/:membershipId/subscribers" element={<MembershipSubscribersPage />} />

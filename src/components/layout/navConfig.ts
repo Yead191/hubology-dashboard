@@ -15,6 +15,7 @@ import {
   FileTextOutlined,
   QuestionCircleOutlined,
   TagOutlined,
+  RollbackOutlined,
 } from "@ant-design/icons";
 import type { ComponentType } from "react";
 import { DISCLAIMER_PAGES } from "@/features/disclaimer/disclaimerConfig";
@@ -98,6 +99,12 @@ export const NAV_ITEMS: NavItem[] = [
         label: "Discount coupons",
         path: "/store/coupons",
         icon: TagOutlined,
+      },
+      {
+        key: "store-refunds",
+        label: "Refunds",
+        path: "/store/refunds",
+        icon: RollbackOutlined,
       },
     ],
   },
