@@ -52,4 +52,9 @@ export interface TransactionsListResponse {
   data: ApiTransaction[];
 }
 
+export interface TransactionMutationResponse {
+  success: boolean;
+  message: string;
+}
+
 export const TRANSACTION_CATEGORY_OPTIONS = ["Membership", "Shop", "Service"] as const;

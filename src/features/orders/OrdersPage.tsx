@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Avatar, Badge, Button, DatePicker, Select, Table, Tabs, Tooltip, type TableProps } from "antd";
 import {
+  DeleteOutlined,
   EyeOutlined,
   ShoppingOutlined,
   UserOutlined,
@@ -11,10 +12,13 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
+import { useConfirmDelete } from "@/hooks/useConfirmDelete";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { getImageUrl } from "@/lib/getImageUrl";
 import {
+  useDeleteOrderMutation,
   useGetOrdersQuery,
   useUpdateOrderStatusMutation,
 } from "@/redux/features/orders/ordersApi";
@@ -90,9 +94,26 @@ export default function OrdersPage() {
   });
 
   const [updateStatus, { isLoading: isUpdatingStatus }] = useUpdateOrderStatusMutation();
+  const [deleteOrder] = useDeleteOrderMutation();
 
   const orders = data?.data ?? [];
   const pagination = data?.pagination;
+
+  const deleteFlow = useConfirmDelete<ApiOrder>(async (record) => {
+    const promise = deleteOrder(record._id)
+      .unwrap()
+      .then(() => {
+        setViewing((prev) => (prev?._id === record._id ? null : prev));
+      });
+
+    toast.promise(promise, {
+      loading: `Deleting ${record.order_id}…`,
+      success: `${record.order_id} was deleted.`,
+      error: (err) => getErrorMessage(err),
+    });
+
+    await promise.catch(() => undefined);
+  });
 
   const applyStatusChange = (order: ApiOrder, status: OrderStatus) => {
     const promise = updateStatus({ id: order._id, status })
@@ -199,16 +220,26 @@ export default function OrdersPage() {
     {
       title: "",
       key: "actions",
-      width: 96,
+      width: 108,
       render: (_, record) => (
-        <Button
-          type="text"
-          className="text-mist-400! hover:bg-violet-600/15! hover:text-violet-glow!"
-          icon={<EyeOutlined />}
-          onClick={() => setViewing(record)}
-        >
-          View
-        </Button>
+        <div className="flex items-center justify-end gap-1">
+          <Tooltip title="View order">
+            <Button
+              type="text"
+              className="text-mist-400! hover:bg-violet-600/15! hover:text-violet-glow!"
+              icon={<EyeOutlined />}
+              onClick={() => setViewing(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Delete order">
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => deleteFlow.request(record)}
+            />
+          </Tooltip>
+        </div>
       ),
     },
   ];
@@ -347,6 +378,16 @@ export default function OrdersPage() {
           if (!viewing) return;
           applyStatusChange(viewing, status);
         }}
+      />
+
+      <ConfirmDeleteModal
+        open={deleteFlow.isOpen}
+        title={`Delete ${deleteFlow.target?.order_id}?`}
+        description="This permanently removes the order and its line items from Hubology. This can't be undone."
+        confirmLabel="Delete order"
+        loading={deleteFlow.loading}
+        onConfirm={deleteFlow.confirm}
+        onCancel={deleteFlow.cancel}
       />
     </div>
   );

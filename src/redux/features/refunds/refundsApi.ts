@@ -53,6 +53,14 @@ export const refundsApi = baseApi.injectEndpoints({
         "Dashboard",
       ],
     }),
+
+    deleteRefund: builder.mutation<RefundMutationResponse, string>({
+      query: (id) => ({
+        url: `/refund/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "Refunds", id: "LIST" }, "Dashboard"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -61,4 +69,5 @@ export const {
   useGetRefundsQuery,
   useGetRefundQuery,
   useReviewRefundMutation,
+  useDeleteRefundMutation,
 } = refundsApi;

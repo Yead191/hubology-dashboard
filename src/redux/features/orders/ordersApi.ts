@@ -46,8 +46,20 @@ export const ordersApi = baseApi.injectEndpoints({
         "Dashboard",
       ],
     }),
+
+    deleteOrder: builder.mutation<OrderMutationResponse, string>({
+      query: (id) => ({
+        url: `/order/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "Orders", id: "LIST" }, "Dashboard"],
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetOrdersQuery, useUpdateOrderStatusMutation } = ordersApi;
+export const {
+  useGetOrdersQuery,
+  useUpdateOrderStatusMutation,
+  useDeleteOrderMutation,
+} = ordersApi;

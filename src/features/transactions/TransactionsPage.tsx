@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import { Avatar, Button, Table, type TableProps } from "antd";
+import { useEffect, useState } from "react";
+import { Avatar, Button, Table, Tooltip, type TableProps } from "antd";
 import {
+  DeleteOutlined,
   EyeOutlined,
   HistoryOutlined,
   UserOutlined,
@@ -9,14 +10,20 @@ import {
   CrownOutlined,
   AppstoreOutlined,
 } from "@ant-design/icons";
+import { toast } from "sonner";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
+import { useConfirmDelete } from "@/hooks/useConfirmDelete";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { getImageUrl } from "@/lib/getImageUrl";
-import { useGetTransactionsQuery } from "@/redux/features/transactions/transactionsApi";
+import {
+  useDeleteTransactionMutation,
+  useGetTransactionsQuery,
+} from "@/redux/features/transactions/transactionsApi";
 import type { ApiTransaction } from "@/redux/features/transactions/transactions.types";
 import {
   formatTransactionLabel,
@@ -29,11 +36,23 @@ import {
 } from "./statusMaps";
 import { TransactionDetailModal } from "./components/TransactionDetailModal";
 
+function getErrorMessage(error: unknown) {
+  if (typeof error === "object" && error !== null) {
+    const err = error as { data?: { message?: string }; message?: string };
+    return err.data?.message ?? err.message ?? "Something went wrong. Please try again.";
+  }
+  return "Something went wrong. Please try again.";
+}
+
 function categoryIcon(category: string) {
   if (isMembershipCategory(category)) return <CrownOutlined />;
   if (isShopCategory(category)) return <ShoppingOutlined />;
   if (isServiceCategory(category)) return <AppstoreOutlined />;
   return <DollarOutlined />;
+}
+
+function transactionLabel(record: ApiTransaction) {
+  return record.transaction_id || `${record._id.slice(0, 10)}…`;
 }
 
 export default function TransactionsPage() {
@@ -56,8 +75,27 @@ export default function TransactionsPage() {
     searchTerm,
   });
 
+  const [deleteTransaction] = useDeleteTransactionMutation();
+
   const transactions = data?.data ?? [];
   const pagination = data?.pagination;
+
+  const deleteFlow = useConfirmDelete<ApiTransaction>(async (record) => {
+    const label = transactionLabel(record);
+    const promise = deleteTransaction(record._id)
+      .unwrap()
+      .then(() => {
+        setViewing((prev) => (prev?._id === record._id ? null : prev));
+      });
+
+    toast.promise(promise, {
+      loading: `Deleting ${label}…`,
+      success: `${label} was deleted.`,
+      error: (err) => getErrorMessage(err),
+    });
+
+    await promise.catch(() => undefined);
+  });
 
   const columns: TableProps<ApiTransaction>["columns"] = [
     {
@@ -70,7 +108,7 @@ export default function TransactionsPage() {
           onClick={() => setViewing(record)}
         >
           <code className="font-mono text-xs font-medium text-cloud-100 transition hover:text-violet-glow">
-            {record.transaction_id || `${record._id.slice(0, 10)}…`}
+            {transactionLabel(record)}
           </code>
           <div className="mt-0.5 text-[11px] text-mist-500">
             {record.createdAt ? formatDate(record.createdAt) : "—"}
@@ -93,7 +131,7 @@ export default function TransactionsPage() {
             <div className="font-medium text-cloud-100">{record?.user?.name || "Deleted user"}</div>
             <div className="max-w-48 truncate text-xs text-mist-400">
               {record?.user?.email || "—"}
-            </div>  
+            </div>
           </div>
         </div>
       ),
@@ -150,16 +188,26 @@ export default function TransactionsPage() {
     {
       title: "",
       key: "actions",
-      width: 96,
+      width: 108,
       render: (_, record) => (
-        <Button
-          type="text"
-          className="text-mist-400! hover:bg-violet-600/15! hover:text-violet-glow!"
-          icon={<EyeOutlined />}
-          onClick={() => setViewing(record)}
-        >
-          View
-        </Button>
+        <div className="flex items-center justify-end gap-1">
+          <Tooltip title="View transaction">
+            <Button
+              type="text"
+              className="text-mist-400! hover:bg-violet-600/15! hover:text-violet-glow!"
+              icon={<EyeOutlined />}
+              onClick={() => setViewing(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Delete transaction">
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => deleteFlow.request(record)}
+            />
+          </Tooltip>
+        </div>
       ),
     },
   ];
@@ -242,6 +290,16 @@ export default function TransactionsPage() {
         transaction={viewing}
         open={!!viewing}
         onClose={() => setViewing(null)}
+      />
+
+      <ConfirmDeleteModal
+        open={deleteFlow.isOpen}
+        title={`Delete ${deleteFlow.target ? transactionLabel(deleteFlow.target) : "transaction"}?`}
+        description="This permanently removes the transaction from the ledger. This can't be undone."
+        confirmLabel="Delete transaction"
+        loading={deleteFlow.loading}
+        onConfirm={deleteFlow.confirm}
+        onCancel={deleteFlow.cancel}
       />
     </div>
   );

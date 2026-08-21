@@ -1,5 +1,9 @@
 import { baseApi } from "../../api/baseApi";
-import type { GetTransactionsParams, TransactionsListResponse } from "./transactions.types";
+import type {
+  GetTransactionsParams,
+  TransactionMutationResponse,
+  TransactionsListResponse,
+} from "./transactions.types";
 
 export const transactionsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -21,8 +25,16 @@ export const transactionsApi = baseApi.injectEndpoints({
             ]
           : [{ type: "Transactions", id: "LIST" }],
     }),
+
+    deleteTransaction: builder.mutation<TransactionMutationResponse, string>({
+      query: (id) => ({
+        url: `/transaction/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "Transactions", id: "LIST" }, "Dashboard"],
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetTransactionsQuery } = transactionsApi;
+export const { useGetTransactionsQuery, useDeleteTransactionMutation } = transactionsApi;

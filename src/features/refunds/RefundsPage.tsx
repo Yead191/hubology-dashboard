@@ -2,18 +2,25 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, Badge, Button, Table, Tabs, Tooltip, type TableProps } from "antd";
 import {
+  DeleteOutlined,
   EyeOutlined,
   RollbackOutlined,
   UserOutlined,
 } from "@ant-design/icons";
+import { toast } from "sonner";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
+import { useConfirmDelete } from "@/hooks/useConfirmDelete";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { getImageUrl } from "@/lib/getImageUrl";
-import { useGetRefundsQuery } from "@/redux/features/refunds/refundsApi";
+import {
+  useDeleteRefundMutation,
+  useGetRefundsQuery,
+} from "@/redux/features/refunds/refundsApi";
 import {
   REFUND_STATUS_OPTIONS,
   type ApiRefund,
@@ -29,6 +36,14 @@ import {
 } from "./statusMaps";
 
 type StatusTab = RefundStatus | "all";
+
+function getErrorMessage(error: unknown) {
+  if (typeof error === "object" && error !== null) {
+    const err = error as { data?: { message?: string }; message?: string };
+    return err.data?.message ?? err.message ?? "Something went wrong. Please try again.";
+  }
+  return "Something went wrong. Please try again.";
+}
 
 function useStatusCount(status?: RefundStatus) {
   const { data } = useGetRefundsQuery({ page: 1, limit: 1, status });
@@ -65,8 +80,22 @@ export default function RefundsPage() {
     status: statusTab === "all" ? undefined : statusTab,
   });
 
+  const [deleteRefund] = useDeleteRefundMutation();
+
   const refunds = data?.data ?? [];
   const pagination = data?.pagination;
+
+  const deleteFlow = useConfirmDelete<ApiRefund>(async (record) => {
+    const promise = deleteRefund(record._id).unwrap();
+
+    toast.promise(promise, {
+      loading: "Deleting refund request…",
+      success: `Refund for ${record.order?.order_id ?? "this order"} was deleted.`,
+      error: (err) => getErrorMessage(err),
+    });
+
+    await promise.catch(() => undefined);
+  });
 
   const columns: TableProps<ApiRefund>["columns"] = [
     {
@@ -151,16 +180,26 @@ export default function RefundsPage() {
     {
       title: "",
       key: "actions",
-      width: 88,
+      width: 108,
       render: (_, record) => (
-        <Tooltip title="Review request">
-          <Button
-            type="text"
-            className="text-mist-400! hover:bg-violet-600/15! hover:text-violet-glow!"
-            icon={<EyeOutlined />}
-            onClick={() => navigate(`/store/refunds/${record._id}`)}
-          />
-        </Tooltip>
+        <div className="flex items-center justify-end gap-1">
+          <Tooltip title="Review request">
+            <Button
+              type="text"
+              className="text-mist-400! hover:bg-violet-600/15! hover:text-violet-glow!"
+              icon={<EyeOutlined />}
+              onClick={() => navigate(`/store/refunds/${record._id}`)}
+            />
+          </Tooltip>
+          <Tooltip title="Delete request">
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => deleteFlow.request(record)}
+            />
+          </Tooltip>
+        </div>
       ),
     },
   ];
@@ -271,6 +310,20 @@ export default function RefundsPage() {
           />
         )}
       </GlassCard>
+
+      <ConfirmDeleteModal
+        open={deleteFlow.isOpen}
+        title="Delete this refund request?"
+        description={`This permanently removes the refund request${
+          deleteFlow.target?.order?.order_id
+            ? ` for ${deleteFlow.target.order.order_id}`
+            : ""
+        }. This can't be undone.`}
+        confirmLabel="Delete request"
+        loading={deleteFlow.loading}
+        onConfirm={deleteFlow.confirm}
+        onCancel={deleteFlow.cancel}
+      />
     </div>
   );
 }
