@@ -88,7 +88,7 @@ export default function EventDetailPage() {
       <div>
         <Skeleton active paragraph={{ rows: 1 }} className="mb-6 max-w-xs" />
         <GlassCard flat>
-          <Skeleton.Image active className="!mb-6 !h-56 !w-full" />
+          <Skeleton.Image active className="mb-6! h-56! w-full!" />
           <Skeleton active paragraph={{ rows: 8 }} />
         </GlassCard>
       </div>

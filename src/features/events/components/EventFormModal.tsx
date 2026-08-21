@@ -186,7 +186,7 @@ export function EventFormModal({
           label={<span className="text-mist-300">Title</span>}
           rules={[{ required: true, message: "Title is required" }]}
         >
-          <Input placeholder="Future of Web Development Workshop" />
+          <Input placeholder="Event title" />
         </Form.Item>
 
         <Form.Item
@@ -199,7 +199,7 @@ export function EventFormModal({
         >
           <Input.TextArea
             rows={4}
-            placeholder="An interactive workshop focused on modern web development…"
+            placeholder="What this event is about…"
             className="resize-none!"
             maxLength={2000}
             showCount
@@ -223,7 +223,7 @@ export function EventFormModal({
           label={<span className="text-mist-300">Location</span>}
           rules={[{ required: true, message: "Location is required" }]}
         >
-          <Input placeholder="Daffodil International University, Dhaka" />
+          <Input placeholder="Venue or address" />
         </Form.Item>
 
         <div className="grid grid-cols-1 gap-x-3 sm:grid-cols-2">
@@ -261,14 +261,14 @@ export function EventFormModal({
             rules={[{ required: true, message: "Organization name is required" }]}
             className="sm:col-span-2"
           >
-            <Input placeholder="DIU Software Engineering Club" />
+            <Input placeholder="Organizer name" />
           </Form.Item>
           <Form.Item
             name="organizationDesignation"
             label={<span className="text-mist-400">Designation</span>}
             rules={[{ required: true, message: "Designation is required" }]}
           >
-            <Input placeholder="Workshop Coordinator" />
+            <Input placeholder="Role or title" />
           </Form.Item>
           <Form.Item
             name="organizationEmail"
@@ -278,7 +278,7 @@ export function EventFormModal({
               { type: "email", message: "Enter a valid email" },
             ]}
           >
-            <Input placeholder="softwareclub@diu.edu.bd" />
+            <Input placeholder="contact@example.com" />
           </Form.Item>
         </div>
 
@@ -286,7 +286,7 @@ export function EventFormModal({
           <Select
             mode="tags"
             tokenSeparators={[","]}
-            placeholder="react, next.js"
+            placeholder="Add tags"
             open={false}
           />
         </Form.Item>
