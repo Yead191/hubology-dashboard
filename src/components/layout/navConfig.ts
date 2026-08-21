@@ -16,6 +16,7 @@ import {
   QuestionCircleOutlined,
   TagOutlined,
   RollbackOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import type { ComponentType } from "react";
 import { DISCLAIMER_PAGES } from "@/features/disclaimer/disclaimerConfig";
@@ -146,6 +147,12 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Testimonials",
     path: "/testimonials",
     icon: CommentOutlined,
+  },
+  {
+    key: "events",
+    label: "Events",
+    path: "/events",
+    icon: CalendarOutlined,
   },
   {
     key: "inquiries",
