@@ -30,6 +30,8 @@ const ForumPostDetailPage = lazy(() => import("@/features/forum/ForumPostDetailP
 const TestimonialsPage = lazy(() => import("@/features/testimonials/TestimonialsPage"));
 const EventsPage = lazy(() => import("@/features/events/EventsPage"));
 const EventDetailPage = lazy(() => import("@/features/events/EventDetailPage"));
+const PartnersPage = lazy(() => import("@/features/partners/PartnersPage"));
+const PartnerDetailPage = lazy(() => import("@/features/partners/PartnerDetailPage"));
 const InquiriesPage = lazy(() => import("@/features/inquiries/InquiriesPage"));
 const DisclaimerEditorPage = lazy(() => import("@/features/disclaimer/DisclaimerEditorPage"));
 const IFundAyitiOverviewPage = lazy(() => import("@/features/ifundayiti/IFundAyitiOverviewPage"));
@@ -67,6 +69,8 @@ export default function App() {
             <Route path="testimonials" element={<TestimonialsPage />} />
             <Route path="events" element={<EventsPage />} />
             <Route path="events/:eventSlug" element={<EventDetailPage />} />
+            <Route path="partners" element={<PartnersPage />} />
+            <Route path="partners/:partnerId" element={<PartnerDetailPage />} />
             <Route path="inquiries" element={<InquiriesPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="disclaimer/:type" element={<DisclaimerEditorPage />} />

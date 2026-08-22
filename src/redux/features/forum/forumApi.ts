@@ -62,6 +62,14 @@ export const forumApi = baseApi.injectEndpoints({
         "Dashboard",
       ],
     }),
+
+    deletePost: builder.mutation<PostMutationResponse, string>({
+      query: (id) => ({
+        url: `/posts/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "Forum", id: "LIST" }, "Dashboard"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -71,4 +79,5 @@ export const {
   useGetPostQuery,
   useGetPostReportsQuery,
   useReviewPostMutation,
+  useDeletePostMutation,
 } = forumApi;

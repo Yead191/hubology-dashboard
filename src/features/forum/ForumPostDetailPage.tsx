@@ -166,22 +166,22 @@ export default function ForumPostDetailPage() {
         <GlassCard flat className="xl:col-span-3">
           <div className="flex items-center gap-3 border-b border-navy-700/60 pb-4">
             <Avatar
-              src={getImageUrl(post.author.image)}
+              src={getImageUrl(post?.author?.image || "")}
               icon={<UserOutlined />}
-              size={48}
+              size={48} 
               className="bg-violet-600/25! text-violet-glow!"
             />
             <div className="min-w-0">
-              <div className="font-medium text-cloud-100">{post.author.name}</div>
+              <div className="font-medium text-cloud-100">{post?.author?.name || "Deleted User"}</div>
               <div className="text-xs text-mist-400">
-                {post.author.role ? `${post.author.role} · ` : ""}
-                {formatDate(post.createdAt)}
+                {post?.author?.role ? `${post?.author?.role} · ` : ""}
+                {formatDate(post?.createdAt || "")}
               </div>
             </div>
           </div>
 
           <p className="mt-5 whitespace-pre-wrap text-[15px] leading-relaxed text-mist-200">
-            {post.content}
+            {post?.content || "No content available"}
           </p>
 
           <div className="mt-6 flex flex-wrap gap-4 border-t border-navy-700/60 pt-4 text-sm text-mist-400">

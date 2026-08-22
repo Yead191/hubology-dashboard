@@ -26,6 +26,8 @@ const PAGE_META: { match: (path: string) => boolean; title: string; subtitle?: s
   { match: (p) => p === "/testimonials", title: "Testimonials", subtitle: "Manage client quotes shown on the marketing site" },
   { match: (p) => p.startsWith("/events/"), title: "Event details", subtitle: "Review schedule, media, and organization details" },
   { match: (p) => p === "/events", title: "Events", subtitle: "Publish and manage Hubology workshops, meetups, and conferences" },
+  { match: (p) => p.startsWith("/partners/"), title: "Partner profile", subtitle: "Review application details and manage partner status" },
+  { match: (p) => p === "/partners", title: "Partners", subtitle: "Review applications and manage the Hubology partner network" },
   { match: (p) => p === "/inquiries", title: "Website inquiries", subtitle: "Track and manage project leads from the Hubology site" },
   { match: (p) => p === "/profile", title: "Your profile", subtitle: "Update your name, photo, and account password" },
   ...DISCLAIMER_PAGES.map((page) => ({

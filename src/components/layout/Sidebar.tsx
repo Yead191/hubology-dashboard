@@ -6,19 +6,28 @@ import { NAV_ITEMS, type NavItem } from "./navConfig";
 import { cn } from "@/lib/utils";
 import { useGetDashboardOverviewQuery } from "@/redux/features/dashboard/dashboardApi";
 import { useGetPostsQuery } from "@/redux/features/forum/forumApi";
+import { useGetPartnersQuery } from "@/redux/features/partners/partnersApi";
+import { PARTNER_STATUS } from "@/redux/features/partners/partners.types";
 
 export function Sidebar({ mobile, onNavigate }: { mobile?: boolean; onNavigate?: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { data: dashboardRes } = useGetDashboardOverviewQuery();
   const { data: reportedRes } = useGetPostsQuery({ status: "reported", page: 1, limit: 1 });
+  const { data: pendingPartnersRes } = useGetPartnersQuery({
+    status: PARTNER_STATUS.PENDING,
+    page: 1,
+    limit: 1,
+  });
 
   const pendingVendors = dashboardRes?.data?.pendingVendors ?? 0;
   const reportedPosts = reportedRes?.pagination?.total ?? 0;
+  const pendingPartners = pendingPartnersRes?.pagination?.total ?? 0;
 
-  const badgeCount = (key?: "pendingVendors" | "reportedPosts") => {
+  const badgeCount = (key?: "pendingVendors" | "reportedPosts" | "pendingPartners") => {
     if (key === "pendingVendors") return pendingVendors;
     if (key === "reportedPosts") return reportedPosts;
+    if (key === "pendingPartners") return pendingPartners;
     return 0;
   };
 

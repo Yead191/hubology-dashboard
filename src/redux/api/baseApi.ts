@@ -46,6 +46,7 @@ export const baseApi = createApi({
     "Coupons",
     "Refunds",
     "Events",
+    "Partners",
   ],
   endpoints: () => ({}),
 });

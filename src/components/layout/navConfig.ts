@@ -17,6 +17,7 @@ import {
   TagOutlined,
   RollbackOutlined,
   CalendarOutlined,
+  ApartmentOutlined,
 } from "@ant-design/icons";
 import type { ComponentType } from "react";
 import { DISCLAIMER_PAGES } from "@/features/disclaimer/disclaimerConfig";
@@ -27,7 +28,7 @@ export interface NavItem {
   path: string;
   icon: ComponentType;
   children?: NavItem[];
-  badgeKey?: "pendingVendors" | "reportedPosts";
+  badgeKey?: "pendingVendors" | "reportedPosts" | "pendingPartners";
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -153,6 +154,13 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Events",
     path: "/events",
     icon: CalendarOutlined,
+  },
+  {
+    key: "partners",
+    label: "Partners",
+    path: "/partners",
+    icon: ApartmentOutlined,
+    badgeKey: "pendingPartners",
   },
   {
     key: "inquiries",

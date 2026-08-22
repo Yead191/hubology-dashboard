@@ -1,21 +1,28 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Avatar, Badge, Button, Table, Tabs, type TableProps } from "antd";
+import { Avatar, Badge, Button, Table, Tabs, Tooltip, type TableProps } from "antd";
 import {
+  DeleteOutlined,
   EyeOutlined,
   FlagFilled,
   MessageOutlined,
   HeartOutlined,
   UserOutlined,
 } from "@ant-design/icons";
+import { toast } from "sonner";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusTag } from "@/components/ui/StatusTag";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
+import { useConfirmDelete } from "@/hooks/useConfirmDelete";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { cn, formatDate } from "@/lib/utils";
 import { getImageUrl } from "@/lib/getImageUrl";
-import { useGetPostsQuery } from "@/redux/features/forum/forumApi";
+import {
+  useDeletePostMutation,
+  useGetPostsQuery,
+} from "@/redux/features/forum/forumApi";
 import {
   POST_STATUS_OPTIONS,
   type ApiPost,
@@ -29,9 +36,23 @@ import {
 
 type StatusTab = PostStatus | "all";
 
+function getErrorMessage(error: unknown) {
+  if (typeof error === "object" && error !== null) {
+    const err = error as { data?: { message?: string }; message?: string };
+    return err.data?.message ?? err.message ?? "Something went wrong. Please try again.";
+  }
+  return "Something went wrong. Please try again.";
+}
+
 function useStatusCount(status?: PostStatus) {
   const { data } = useGetPostsQuery({ page: 1, limit: 1, status });
   return data?.pagination?.total ?? 0;
+}
+
+function postPreview(content: string) {
+  const trimmed = content.trim();
+  if (trimmed.length <= 48) return trimmed;
+  return `${trimmed.slice(0, 48)}…`;
 }
 
 export default function ForumModerationPage() {
@@ -64,8 +85,23 @@ export default function ForumModerationPage() {
     status: statusTab === "all" ? undefined : statusTab,
   });
 
+  const [deletePost] = useDeletePostMutation();
+
   const posts = data?.data ?? [];
   const pagination = data?.pagination;
+
+  const deleteFlow = useConfirmDelete<ApiPost>(async (record) => {
+    const label = postPreview(record.content);
+    const promise = deletePost(record._id).unwrap();
+
+    toast.promise(promise, {
+      loading: "Deleting post…",
+      success: `Deleted “${label}”.`,
+      error: (err) => getErrorMessage(err),
+    });
+
+    await promise.catch(() => undefined);
+  });
 
   const columns: TableProps<ApiPost>["columns"] = [
     {
@@ -78,7 +114,7 @@ export default function ForumModerationPage() {
           onClick={() => navigate(`/forum/${record._id}`)}
         >
           <Avatar
-            src={getImageUrl(record?.author?.image ||"")}
+            src={getImageUrl(record?.author?.image || "")}
             icon={<UserOutlined />}
             size={40}
             className="mt-0.5 shrink-0 bg-violet-600/25! text-violet-glow!"
@@ -138,7 +174,9 @@ export default function ForumModerationPage() {
       title: "Posted",
       key: "createdAt",
       responsive: ["xl"],
-      render: (_, record) => <span className="text-mist-400">{formatDate(record?.createdAt || "")}</span>,
+      render: (_, record) => (
+        <span className="text-mist-400">{formatDate(record?.createdAt || "")}</span>
+      ),
     },
     {
       title: "Status",
@@ -154,14 +192,24 @@ export default function ForumModerationPage() {
       key: "actions",
       width: 108,
       render: (_, record) => (
-        <Button
-          type="text"
-          className="text-mist-400! hover:bg-violet-600/15! hover:text-violet-glow!"
-          icon={<EyeOutlined />}
-          onClick={() => navigate(`/forum/${record._id}`)}
-        >
-          Review
-        </Button>
+        <div className="flex items-center justify-end gap-1">
+          <Tooltip title="Review post">
+            <Button
+              type="text"
+              className="text-mist-400! hover:bg-violet-600/15! hover:text-violet-glow!"
+              icon={<EyeOutlined />}
+              onClick={() => navigate(`/forum/${record._id}`)}
+            />
+          </Tooltip>
+          <Tooltip title="Delete post">
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => deleteFlow.request(record)}
+            />
+          </Tooltip>
+        </div>
       ),
     },
   ];
@@ -277,6 +325,18 @@ export default function ForumModerationPage() {
           />
         )}
       </GlassCard>
+
+      <ConfirmDeleteModal
+        open={deleteFlow.isOpen}
+        title="Delete this post?"
+        description={`This permanently removes the post${
+          deleteFlow.target?.author?.name ? ` by ${deleteFlow.target.author.name}` : ""
+        } and its reports from the forum. This can't be undone.`}
+        confirmLabel="Delete post"
+        loading={deleteFlow.loading}
+        onConfirm={deleteFlow.confirm}
+        onCancel={deleteFlow.cancel}
+      />
     </div>
   );
 }
