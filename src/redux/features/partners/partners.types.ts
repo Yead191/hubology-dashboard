@@ -80,6 +80,6 @@ export interface PartnerFormPayload {
   contactPhone: string;
   status: PartnerStatus;
   featured: boolean;
-  imageFile?: File | null;
+  image: File | null;
   userId?: string | null;
 }
