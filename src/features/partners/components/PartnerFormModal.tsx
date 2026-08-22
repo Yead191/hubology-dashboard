@@ -12,6 +12,7 @@ import { InboxOutlined, ApartmentOutlined } from "@ant-design/icons";
 import type { UploadFile } from "antd/es/upload/interface";
 import { toFileUrl } from "@/config";
 import { parseBoolean } from "@/lib/utils";
+import { normalizeOffers } from "@/redux/features/partners/buildPartnerFormData";
 import {
   PARTNER_STATUS,
   PARTNER_STATUS_OPTIONS,
@@ -22,6 +23,13 @@ import {
 } from "@/redux/features/partners/partners.types";
 import { partnerStatusLabelMap } from "../statusMaps";
 import { UserSearchSelect } from "./UserSearchSelect";
+
+function resolveUploadFile(fileList: UploadFile[]): File | undefined {
+  const entry = fileList.at(-1);
+  if (!entry) return undefined;
+  if (entry.originFileObj instanceof File) return entry.originFileObj;
+  return undefined;
+}
 
 interface FormValues {
   name: string;
@@ -68,7 +76,7 @@ export function PartnerFormModal({
         status: (PARTNER_STATUS_OPTIONS.includes(initial.status as PartnerStatus)
           ? initial.status
           : PARTNER_STATUS.PENDING) as PartnerStatus,
-        offers: initial.offers ?? [],
+        offers: normalizeOffers(initial.offers),
         featured: parseBoolean(initial.featured),
       });
       setUserId(initial.user?._id ?? null);
@@ -92,9 +100,9 @@ export function PartnerFormModal({
   }, [open, initial, form]);
 
   const handleFinish = (values: FormValues) => {
-    const imageFile = imageList.find((f) => f.originFileObj)?.originFileObj as File | undefined;
+    const image = resolveUploadFile(imageList);
 
-    if (!isEdit && !imageFile) {
+    if (!isEdit && !image) {
       setImageError("Upload a partner logo");
       return;
     }
@@ -102,13 +110,13 @@ export function PartnerFormModal({
     onSubmit({
       name: values.name,
       description: values.description,
-      offers: values.offers ?? [],
+      offers: normalizeOffers(values.offers),
       website: values.website,
       contactEmail: values.contactEmail,
       contactPhone: values.contactPhone,
       status: values.status,
       featured: parseBoolean(values.featured),
-      imageFile: imageFile ?? null,
+      image: image ?? null,
       userId,
     });
   };
@@ -258,7 +266,7 @@ export function PartnerFormModal({
             fileList={imageList}
             beforeUpload={() => false}
             onChange={({ fileList }) => {
-              setImageList(fileList.slice(-1));
+              setImageList(fileList.slice(-1).map((file) => ({ ...file, status: "done" as const })));
               setImageError(null);
             }}
           >
