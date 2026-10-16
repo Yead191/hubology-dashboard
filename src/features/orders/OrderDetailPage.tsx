@@ -35,7 +35,10 @@ import {
   useGetOrderByIdQuery,
   useUpdateOrderStatusMutation,
 } from "@/redux/features/orders/ordersApi";
-import type { ApiOrder, OrderStatus } from "@/redux/features/orders/orders.types";
+import type {
+  ApiOrder,
+  OrderStatus,
+} from "@/redux/features/orders/orders.types";
 import {
   orderStatusLabelMap,
   orderStatusToneMap,
@@ -47,12 +50,24 @@ import { OrderStatusSelect } from "./components/OrderStatusSelect";
 function getErrorMessage(error: unknown) {
   if (typeof error === "object" && error !== null) {
     const err = error as { data?: { message?: string }; message?: string };
-    return err.data?.message ?? err.message ?? "Something went wrong. Please try again.";
+    return (
+      err.data?.message ??
+      err.message ??
+      "Something went wrong. Please try again."
+    );
   }
   return "Something went wrong. Please try again.";
 }
 
-function SectionTitle({ icon, title, badge }: { icon: ReactNode; title: string; badge?: ReactNode }) {
+function SectionTitle({
+  icon,
+  title,
+  badge,
+}: {
+  icon: ReactNode;
+  title: string;
+  badge?: ReactNode;
+}) {
   return (
     <div className="flex items-center justify-between border-b border-navy-700/60 pb-3">
       <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-mist-400">
@@ -104,7 +119,8 @@ export default function OrderDetailPage() {
     refetch,
   } = useGetOrderByIdQuery(orderId, { skip: !orderId });
 
-  const [updateStatus, { isLoading: isUpdatingStatus }] = useUpdateOrderStatusMutation();
+  const [updateStatus, { isLoading: isUpdatingStatus }] =
+    useUpdateOrderStatusMutation();
   const [deleteOrder] = useDeleteOrderMutation();
 
   const order = orderRes?.data;
@@ -158,7 +174,12 @@ export default function OrderDetailPage() {
 
         <GlassCard className="p-6">
           <div className="flex flex-col gap-6 md:flex-row md:items-center">
-            <Skeleton.Avatar active size={64} shape="square" className="rounded-2xl" />
+            <Skeleton.Avatar
+              active
+              size={64}
+              shape="square"
+              className="rounded-2xl"
+            />
             <div className="flex-1 space-y-3">
               <Skeleton.Input active size="large" style={{ width: 280 }} />
               <Skeleton.Input active size="small" style={{ width: 180 }} />
@@ -219,7 +240,10 @@ export default function OrderDetailPage() {
     subtotal: 0,
   };
 
-  const itemCount = order.items?.reduce((acc, item) => acc + (item.quantity || 0), 0) ?? order.total_items ?? 0;
+  const itemCount =
+    order.items?.reduce((acc, item) => acc + (item.quantity || 0), 0) ??
+    order.total_items ??
+    0;
   const isCancelled = order.status === "Cancelled";
 
   const shippingAddress =
@@ -234,7 +258,8 @@ export default function OrderDetailPage() {
       .join(", ") ||
     null;
 
-  const contactNumber = order.contact_number || order.address_breakdown?.contact_number;
+  const contactNumber =
+    order.contact_number || order.address_breakdown?.contact_number;
 
   // Fulfillment steps timeline calculation
   const steps: { key: OrderStatus; label: string; desc: string }[] = [
@@ -247,10 +272,10 @@ export default function OrderDetailPage() {
     order.status === "Pending"
       ? 0
       : order.status === "Processing"
-      ? 1
-      : order.status === "Deliverd"
-      ? 2
-      : -1;
+        ? 1
+        : order.status === "Deliverd"
+          ? 2
+          : -1;
 
   return (
     <div className="space-y-6 pb-12">
@@ -267,7 +292,9 @@ export default function OrderDetailPage() {
         <div className="flex items-center gap-2.5">
           <Button
             type="default"
-            icon={<ReloadOutlined className={cn(isFetching && "animate-spin")} />}
+            icon={
+              <ReloadOutlined className={cn(isFetching && "animate-spin")} />
+            }
             onClick={() => refetch()}
             loading={isFetching}
             className="border-navy-700/80 bg-navy-800/60 text-mist-300 hover:text-cloud-100"
@@ -314,7 +341,9 @@ export default function OrderDetailPage() {
                 <StatusTag tone={orderStatusToneMap[order.status]}>
                   {orderStatusLabelMap[order.status]}
                 </StatusTag>
-                <StatusTag tone={paymentStatusToneMap[order.payment_status] ?? "neutral"}>
+                <StatusTag
+                  tone={paymentStatusToneMap[order.payment_status] ?? "neutral"}
+                >
                   {paymentLabel(order.payment_status)}
                 </StatusTag>
               </div>
@@ -322,7 +351,10 @@ export default function OrderDetailPage() {
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-mist-400">
                 <span className="inline-flex items-center gap-1.5">
                   <ClockCircleOutlined className="text-violet-glow" />
-                  Placed {order.createdAt ? formatDateTime(order.createdAt) : "Recently"}
+                  Placed{" "}
+                  {order.createdAt
+                    ? formatDateTime(order.createdAt)
+                    : "Recently"}
                 </span>
                 <span>•</span>
                 <span>
@@ -346,7 +378,9 @@ export default function OrderDetailPage() {
               <div className="text-[11px] font-semibold uppercase tracking-wider text-mist-500">
                 Fulfillment status
               </div>
-              <div className="text-xs text-mist-400">Update live order progress</div>
+              <div className="text-xs text-mist-400">
+                Update live order progress
+              </div>
             </div>
             <div className="sm:ml-4">
               <OrderStatusSelect
@@ -387,8 +421,8 @@ export default function OrderDetailPage() {
                             isCurrent
                               ? "text-violet-glow"
                               : isCompleted
-                              ? "text-cloud-100"
-                              : "text-mist-500",
+                                ? "text-cloud-100"
+                                : "text-mist-500",
                           )}
                         >
                           {step.label}
@@ -407,7 +441,9 @@ export default function OrderDetailPage() {
           <div className="relative mt-6 flex items-center gap-3 rounded-2xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
             <CloseCircleFilled className="text-lg" />
             <div>
-              <span className="font-semibold">Order Cancelled:</span> This order was marked as cancelled and is no longer moving through the fulfillment pipeline.
+              <span className="font-semibold">Order Cancelled:</span> This order
+              was marked as cancelled and is no longer moving through the
+              fulfillment pipeline.
             </div>
           </div>
         )}
@@ -424,7 +460,10 @@ export default function OrderDetailPage() {
               title={`Items in order (${order.items?.length ?? 0})`}
               badge={
                 <span className="text-xs text-mist-400">
-                  Total items: <span className="font-semibold text-cloud-100">{itemCount}</span>
+                  Total items:{" "}
+                  <span className="font-semibold text-cloud-100">
+                    {itemCount}
+                  </span>
                 </span>
               }
             />
@@ -455,10 +494,15 @@ export default function OrderDetailPage() {
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium text-cloud-100 text-base">{item.title}</div>
+                      <div className="font-medium text-cloud-100 text-base">
+                        {item.title}
+                      </div>
                       <div className="mt-1 flex items-center gap-3 text-xs text-mist-400">
                         <span>
-                          Unit price: <span className="text-cloud-200 font-medium">{formatCurrency(item.unit_price)}</span>
+                          Unit price:{" "}
+                          <span className="text-cloud-200 font-medium">
+                            {formatCurrency(item.unit_price)}
+                          </span>
                         </span>
                         <span>•</span>
                         <span className="inline-flex items-center gap-1 rounded-md bg-navy-800 px-2 py-0.5 font-medium text-cloud-200">
@@ -469,7 +513,9 @@ export default function OrderDetailPage() {
 
                     <div className="text-right">
                       <div className="font-display font-semibold text-cloud-100 text-base">
-                        {formatCurrency(item.total_price || item.unit_price * item.quantity)}
+                        {formatCurrency(
+                          item.total_price || item.unit_price * item.quantity,
+                        )}
                       </div>
                       <div className="text-xs text-mist-500">
                         {formatCurrency(item.unit_price)} each
@@ -487,12 +533,17 @@ export default function OrderDetailPage() {
 
           {/* Pricing & Financial Breakdown */}
           <GlassCard className="p-6">
-            <SectionTitle icon={<CreditCardOutlined />} title="Payment breakdown" />
+            <SectionTitle
+              icon={<CreditCardOutlined />}
+              title="Payment breakdown"
+            />
 
             <div className="mt-4 space-y-2">
               <SummaryRow
                 label="Products subtotal"
-                value={formatCurrency(breakdown.products_price || breakdown.subtotal)}
+                value={formatCurrency(
+                  breakdown.products_price || breakdown.subtotal,
+                )}
               />
               <SummaryRow
                 label="Delivery / shipping fee"
@@ -510,7 +561,11 @@ export default function OrderDetailPage() {
               />
               {breakdown.discount_amount > 0 && (
                 <SummaryRow
-                  label={order.coupon ? `Discount (${order.coupon})` : "Discount applied"}
+                  label={
+                    order.coupon
+                      ? `Discount (${order.coupon})`
+                      : "Discount applied"
+                  }
                   value={`-${formatCurrency(breakdown.discount_amount)}`}
                   accent="success"
                 />
@@ -522,7 +577,10 @@ export default function OrderDetailPage() {
                     Total Amount
                   </div>
                   <div className="text-xs text-mist-500">
-                    Payment status: <span className="text-cloud-200 capitalize">{order.payment_status}</span>
+                    Payment status:{" "}
+                    <span className="text-cloud-200 capitalize">
+                      {order.payment_status}
+                    </span>
                   </div>
                 </div>
                 <div className="font-display text-2xl md:text-3xl font-bold text-warning">
@@ -605,12 +663,18 @@ export default function OrderDetailPage() {
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-mist-400 truncate mt-0.5">
                   <MailOutlined className="text-mist-500" />
-                  <span className="truncate">{order?.user?.email ?? "No email"}</span>
+                  <span className="truncate">
+                    {order?.user?.email ?? "No email"}
+                  </span>
                   {order?.user?.email && (
                     <button
                       type="button"
                       onClick={() =>
-                        copyToClipboard(order.user.email, "email", "Customer email")
+                        copyToClipboard(
+                          order.user.email,
+                          "email",
+                          "Customer email",
+                        )
                       }
                       className="ml-1 text-mist-500 hover:text-cloud-100"
                     >
@@ -631,7 +695,9 @@ export default function OrderDetailPage() {
                   <span className="text-mist-400 flex items-center gap-1.5">
                     <PhoneOutlined /> Contact phone
                   </span>
-                  <span className="font-medium text-cloud-100">{contactNumber}</span>
+                  <span className="font-medium text-cloud-100">
+                    {contactNumber}
+                  </span>
                 </div>
               )}
               {order.user?._id && (
@@ -647,7 +713,10 @@ export default function OrderDetailPage() {
 
           {/* Shipping & Delivery Address */}
           <GlassCard className="p-6">
-            <SectionTitle icon={<EnvironmentOutlined />} title="Shipping information" />
+            <SectionTitle
+              icon={<EnvironmentOutlined />}
+              title="Shipping information"
+            />
 
             <div className="mt-4 space-y-4">
               {contactNumber && (
@@ -679,7 +748,9 @@ export default function OrderDetailPage() {
                       {shippingAddress}
                     </p>
                   ) : (
-                    <p className="mt-1 text-sm text-mist-500">No physical address specified.</p>
+                    <p className="mt-1 text-sm text-mist-500">
+                      No physical address specified.
+                    </p>
                   )}
                 </div>
               </div>
@@ -717,7 +788,10 @@ export default function OrderDetailPage() {
 
           {/* Payment & Security Metadata */}
           <GlassCard className="p-6">
-            <SectionTitle icon={<SafetyCertificateOutlined />} title="Transaction identifiers" />
+            <SectionTitle
+              icon={<SafetyCertificateOutlined />}
+              title="Transaction identifiers"
+            />
 
             <div className="mt-4 space-y-3">
               <div>
@@ -726,7 +800,9 @@ export default function OrderDetailPage() {
                   <span className="truncate">{order.order_id}</span>
                   <button
                     type="button"
-                    onClick={() => copyToClipboard(order.order_id, "order_id", "Order ID")}
+                    onClick={() =>
+                      copyToClipboard(order.order_id, "order_id", "Order ID")
+                    }
                     className="text-mist-400 hover:text-cloud-100"
                   >
                     {copiedKey === "order_id" ? (
@@ -740,9 +816,13 @@ export default function OrderDetailPage() {
 
               {order.payment_intent_id ? (
                 <div>
-                  <div className="text-xs text-mist-400">Stripe payment intent</div>
+                  <div className="text-xs text-mist-400">
+                    Stripe payment intent
+                  </div>
                   <div className="mt-1 flex items-center justify-between rounded-xl border border-navy-700/60 bg-navy-900/60 px-3 py-2 font-mono text-xs text-cloud-100">
-                    <span className="truncate max-w-[220px]">{order.payment_intent_id}</span>
+                    <span className="truncate max-w-55">
+                      {order.payment_intent_id}
+                    </span>
                     <button
                       type="button"
                       onClick={() =>
@@ -768,7 +848,9 @@ export default function OrderDetailPage() {
                 <div>
                   <div className="text-xs text-mist-400">Transaction ID</div>
                   <div className="mt-1 flex items-center justify-between rounded-xl border border-navy-700/60 bg-navy-900/60 px-3 py-2 font-mono text-xs text-cloud-100">
-                    <span className="truncate max-w-[220px]">{order.transaction_id}</span>
+                    <span className="truncate max-w-55">
+                      {order.transaction_id}
+                    </span>
                     <button
                       type="button"
                       onClick={() =>
@@ -791,7 +873,8 @@ export default function OrderDetailPage() {
               ) : null}
 
               <div className="pt-2 text-xs text-mist-500">
-                Created: {order.createdAt ? formatDateTime(order.createdAt) : "—"}
+                Created:{" "}
+                {order.createdAt ? formatDateTime(order.createdAt) : "—"}
                 {order.updatedAt && (
                   <span className="block mt-0.5">
                     Last updated: {formatDateTime(order.updatedAt)}
