@@ -63,4 +63,10 @@ export interface UserMutationResponse {
   data?: ApiUser;
 }
 
+export interface UserSingleResponse {
+  success: boolean;
+  message: string;
+  data: ApiUser;
+}
+
 export const USER_STATUS_OPTIONS: UserAccountStatus[] = ["active", "blocked"];

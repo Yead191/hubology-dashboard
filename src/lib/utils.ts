@@ -18,16 +18,18 @@ export function formatCurrency(amount: number, currency = "$") {
 }
 
 /** Format an ISO or Date value into a readable short date, e.g. "Jul 11, 2026". */
-export function formatDate(value: string | Date) {
+export function formatDate(value?: string | Date | null) {
+  if (!value) return "—";
   const date = typeof value === "string" ? new Date(value) : value;
-  if (Number.isNaN(date.getTime())) return "—";
+  if (!date || Number.isNaN(date.getTime())) return "—";
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 /** Format a Date into a readable date + time string. */
-export function formatDateTime(value: string | Date) {
+export function formatDateTime(value?: string | Date | null) {
+  if (!value) return "—";
   const date = typeof value === "string" ? new Date(value) : value;
-  if (Number.isNaN(date.getTime())) return "—";
+  if (!date || Number.isNaN(date.getTime())) return "—";
   return date.toLocaleString("en-US", {
     month: "short",
     day: "numeric",

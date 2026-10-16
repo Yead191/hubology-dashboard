@@ -51,14 +51,17 @@ export interface NotificationMutationResponse {
 const notificationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getNotifications: builder.query<NotificationsResponse, GetNotificationsParams | void>({
-      query: (params) => ({
-        url: "/notification",
-        method: "GET",
-        params: {
-          page: params?.page ?? 1,
-          limit: params?.limit ?? 10,
-        },
-      }),
+      query: (arg) => {
+        const params = (arg || {}) as GetNotificationsParams;
+        return {
+          url: "/notification",
+          method: "GET",
+          params: {
+            page: params.page ?? 1,
+            limit: params.limit ?? 10,
+          },
+        };
+      },
       // Keep one cache entry so pages can merge for infinite scroll.
       serializeQueryArgs: ({ endpointName }) => endpointName,
       merge: (currentCache, incoming) => {
@@ -76,7 +79,9 @@ const notificationApi = baseApi.injectEndpoints({
         currentCache.success = incoming.success;
       },
       forceRefetch({ currentArg, previousArg }) {
-        return (currentArg?.page ?? 1) !== (previousArg?.page ?? 1);
+        const curr = (currentArg || {}) as GetNotificationsParams;
+        const prev = (previousArg || {}) as GetNotificationsParams;
+        return (curr.page ?? 1) !== (prev.page ?? 1);
       },
       providesTags: ["Notification"],
     }),
@@ -96,6 +101,32 @@ const notificationApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Notification"],
     }),
+
+    deleteNotification: builder.mutation<NotificationMutationResponse, { id: string } | string>({
+      query: (arg) => {
+        const id = typeof arg === "string" ? arg : arg.id;
+        return {
+          url: `/notification/${id}`,
+          method: "DELETE",
+        };
+      },
+      invalidatesTags: ["Notification"],
+    }),
+
+    getAllNotifications: builder.query<NotificationsResponse, GetNotificationsParams | void>({
+      query: (arg) => {
+        const params = (arg || {}) as GetNotificationsParams;
+        return {
+          url: "/notification",
+          method: "GET",
+          params: {
+            page: params.page ?? 1,
+            limit: params.limit ?? 10,
+          },
+        };
+      },
+      providesTags: ["Notification"],
+    }),
   }),
   overrideExisting: true,
 });
@@ -103,8 +134,11 @@ const notificationApi = baseApi.injectEndpoints({
 export const {
   useGetNotificationsQuery,
   useLazyGetNotificationsQuery,
+  useGetAllNotificationsQuery,
+  useLazyGetAllNotificationsQuery,
   useReadNotificationMutation,
   useReadAllNotificationsMutation,
+  useDeleteNotificationMutation,
 } = notificationApi;
 
 export default notificationApi;

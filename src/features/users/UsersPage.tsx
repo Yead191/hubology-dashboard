@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Avatar, Badge, Button, Segmented, Table, Tabs, Tooltip, type TableProps } from "antd";
 import {
   UserOutlined,
@@ -33,7 +34,6 @@ import {
   userStatusDotClassMap,
   userStatusLabelMap,
 } from "./statusMaps";
-import { UserProfileModal } from "./components/UserProfileModal";
 import { UserStatusSelect } from "./components/UserStatusSelect";
 
 type StatusTab = UserAccountStatus | "all";
@@ -53,12 +53,12 @@ function useStatusCount(status?: UserAccountStatus) {
 }
 
 export default function UsersPage() {
+  const navigate = useNavigate();
   const { value: search, setValue: setSearch, debouncedValue: searchTerm } = useDebouncedSearch();
   const [statusTab, setStatusTab] = useState<StatusTab>("all");
   const [subscriptionFilter, setSubscriptionFilter] = useState<SubscriptionFilter>("all");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [viewing, setViewing] = useState<ApiUser | null>(null);
 
   const hasSubscription = subscriptionFilter === "subscribers";
 
@@ -91,11 +91,7 @@ export default function UsersPage() {
   const pagination = data?.pagination;
 
   const deleteFlow = useConfirmDelete<ApiUser>(async (record) => {
-    const promise = deleteUser(record._id)
-      .unwrap()
-      .then(() => {
-        setViewing((prev) => (prev?._id === record._id ? null : prev));
-      });
+    const promise = deleteUser(record._id).unwrap();
 
     toast.promise(promise, {
       loading: `Deleting ${record.name}…`,
@@ -110,11 +106,7 @@ export default function UsersPage() {
     const promise = changeStatus({
       id: user._id,
       body: { status },
-    })
-      .unwrap()
-      .then(() => {
-        setViewing((prev) => (prev && prev._id === user._id ? { ...prev, status } : prev));
-      });
+    }).unwrap();
 
     toast.promise(promise, {
       loading: `Updating ${user.name}…`,
@@ -128,10 +120,9 @@ export default function UsersPage() {
       title: "User",
       key: "name",
       render: (_, record) => (
-        <button
-          type="button"
+        <Link
+          to={`/users/${record._id}`}
           className="group flex items-center gap-3.5 text-left"
-          onClick={() => setViewing(record)}
         >
           <div className="rounded-xl bg-gradient-to-br from-violet-600/40 to-violet-900/30 p-[1.5px] transition group-hover:from-violet-600/70">
             <Avatar
@@ -149,7 +140,7 @@ export default function UsersPage() {
             </div>
             <div className="max-w-[240px] truncate text-xs text-mist-400">{record.email}</div>
           </div>
-        </button>
+        </Link>
       ),
     },
     {
@@ -222,12 +213,12 @@ export default function UsersPage() {
       width: 108,
       render: (_, record) => (
         <div className="flex items-center justify-end gap-1">
-          <Tooltip title="View profile">
+          <Tooltip title="View user details">
             <Button
               type="text"
               className="!text-mist-400 hover:!bg-violet-600/15 hover:!text-violet-glow"
               icon={<EyeOutlined />}
-              onClick={() => setViewing(record)}
+              onClick={() => navigate(`/users/${record._id}`)}
             />
           </Tooltip>
           <Tooltip title="Delete user">
@@ -359,21 +350,6 @@ export default function UsersPage() {
           />
         )}
       </GlassCard>
-
-      <UserProfileModal
-        user={viewing}
-        open={!!viewing}
-        updating={isChangingStatus}
-        onClose={() => setViewing(null)}
-        onStatusChange={(status) => {
-          if (!viewing) return;
-          applyStatusChange(viewing, status);
-        }}
-        onDelete={(user) => {
-          setViewing(null);
-          deleteFlow.request(user);
-        }}
-      />
 
       <ConfirmDeleteModal
         open={deleteFlow.isOpen}

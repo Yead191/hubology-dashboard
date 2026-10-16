@@ -10,18 +10,21 @@ import type {
 export const vendorsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getVendors: builder.query<VendorsListResponse, GetVendorsParams | void>({
-      query: (params) => ({
-        url: "/vendor",
-        method: "GET",
-        params: {
-          page: params?.page ?? 1,
-          limit: params?.limit ?? 10,
-          searchTerm: params?.searchTerm ?? "",
-          ...(params?.status ? { status: params.status } : {}),
-          ...(params?.availability ? { availability: params.availability } : {}),
-          ...(params?.hourlyRateRange ? { hourlyRateRange: params.hourlyRateRange } : {}),
-        },
-      }),
+      query: (arg) => {
+        const params = (arg || {}) as GetVendorsParams;
+        return {
+          url: "/vendor",
+          method: "GET",
+          params: {
+            page: params.page ?? 1,
+            limit: params.limit ?? 10,
+            searchTerm: params.searchTerm ?? "",
+            ...(params.status ? { status: params.status } : {}),
+            ...(params.availability ? { availability: params.availability } : {}),
+            ...(params.hourlyRateRange ? { hourlyRateRange: params.hourlyRateRange } : {}),
+          },
+        };
+      },
       providesTags: (result) =>
         result?.data
           ? [

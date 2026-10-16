@@ -1,5 +1,16 @@
 import { useEffect, useState } from "react";
-import { Avatar, Badge, Button, DatePicker, Select, Table, Tabs, Tooltip, type TableProps } from "antd";
+import { Link } from "react-router-dom";
+import {
+  Avatar,
+  Badge,
+  Button,
+  DatePicker,
+  Select,
+  Table,
+  Tabs,
+  Tooltip,
+  type TableProps,
+} from "antd";
 import {
   DeleteOutlined,
   EyeOutlined,
@@ -36,7 +47,6 @@ import {
   paymentStatusLabelMap,
   paymentStatusToneMap,
 } from "./statusMaps";
-import { OrderDetailModal } from "./components/OrderDetailModal";
 import { OrderStatusSelect } from "./components/OrderStatusSelect";
 
 const { RangePicker } = DatePicker;
@@ -46,7 +56,11 @@ type StatusTab = OrderStatus | "all";
 function getErrorMessage(error: unknown) {
   if (typeof error === "object" && error !== null) {
     const err = error as { data?: { message?: string }; message?: string };
-    return err.data?.message ?? err.message ?? "Something went wrong. Please try again.";
+    return (
+      err.data?.message ??
+      err.message ??
+      "Something went wrong. Please try again."
+    );
   }
   return "Something went wrong. Please try again.";
 }
@@ -57,13 +71,18 @@ function useStatusCount(status?: OrderStatus) {
 }
 
 export default function OrdersPage() {
-  const { value: search, setValue: setSearch, debouncedValue: searchTerm } = useDebouncedSearch();
+  const {
+    value: search,
+    setValue: setSearch,
+    debouncedValue: searchTerm,
+  } = useDebouncedSearch();
   const [statusTab, setStatusTab] = useState<StatusTab>("all");
-  const [paymentStatus, setPaymentStatus] = useState<OrderPaymentStatus | "">("");
+  const [paymentStatus, setPaymentStatus] = useState<OrderPaymentStatus | "">(
+    "",
+  );
   const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [viewing, setViewing] = useState<ApiOrder | null>(null);
 
   useEffect(() => {
     setPage(1);
@@ -93,18 +112,14 @@ export default function OrdersPage() {
     endDate: dateRange?.[1]?.endOf("day").toISOString(),
   });
 
-  const [updateStatus, { isLoading: isUpdatingStatus }] = useUpdateOrderStatusMutation();
+  const [updateStatus] = useUpdateOrderStatusMutation();
   const [deleteOrder] = useDeleteOrderMutation();
 
   const orders = data?.data ?? [];
   const pagination = data?.pagination;
 
   const deleteFlow = useConfirmDelete<ApiOrder>(async (record) => {
-    const promise = deleteOrder(record._id)
-      .unwrap()
-      .then(() => {
-        setViewing((prev) => (prev?._id === record._id ? null : prev));
-      });
+    const promise = deleteOrder(record._id).unwrap();
 
     toast.promise(promise, {
       loading: `Deleting ${record.order_id}…`,
@@ -116,11 +131,7 @@ export default function OrdersPage() {
   });
 
   const applyStatusChange = (order: ApiOrder, status: OrderStatus) => {
-    const promise = updateStatus({ id: order._id, status })
-      .unwrap()
-      .then(() => {
-        setViewing((prev) => (prev && prev._id === order._id ? { ...prev, status } : prev));
-      });
+    const promise = updateStatus({ id: order._id, status }).unwrap();
 
     toast.promise(promise, {
       loading: `Updating ${order.order_id}…`,
@@ -134,15 +145,18 @@ export default function OrdersPage() {
       title: "Order",
       key: "order_id",
       render: (_, record) => (
-        <button type="button" className="text-left" onClick={() => setViewing(record)}>
-          <div className="font-display font-semibold text-cloud-100 transition hover:text-violet-glow">
+        <Link
+          to={`/store/orders/${record._id}`}
+          className="block text-left group"
+        >
+          <div className="font-display font-semibold text-cloud-100 transition group-hover:text-violet-glow">
             {record.order_id}
           </div>
           <div className="text-xs text-mist-500">
             {record.items.length} line{record.items.length === 1 ? "" : "s"}
             {record.createdAt ? ` · ${formatDate(record.createdAt)}` : ""}
           </div>
-        </button>
+        </Link>
       ),
     },
     {
@@ -151,14 +165,18 @@ export default function OrdersPage() {
       render: (_, record) => (
         <div className="flex items-center gap-3">
           <Avatar
-            src={getImageUrl(record.user.image)}
+            src={getImageUrl(record?.user?.image || "")}
             icon={<UserOutlined />}
             size={38}
             className="bg-violet-600/25! text-violet-glow!"
           />
           <div className="min-w-0">
-            <div className="font-medium text-cloud-100">{record.user.name}</div>
-            <div className="max-w-48 truncate text-xs text-mist-400">{record.user.email}</div>
+            <div className="font-medium text-cloud-100">
+              {record?.user?.name ?? "Deleted User"}{" "}
+            </div>
+            <div className="max-w-48 truncate text-xs text-mist-400">
+              {record?.user?.email ?? "Deleted"}
+            </div>
           </div>
         </div>
       ),
@@ -173,9 +191,16 @@ export default function OrdersPage() {
         return (
           <div className="flex items-center gap-1.5">
             {preview.map((item, index) => (
-              <Tooltip key={`${item.title}-${index}`} title={`${item.title} ×${item.quantity}`}>
+              <Tooltip
+                key={`${item.title}-${index}`}
+                title={`${item.title} ×${item.quantity}`}
+              >
                 <div className="h-9 w-9 overflow-hidden rounded-lg border border-navy-700/70 bg-navy-900">
-                  <img src={getImageUrl(item.image)} alt="" className="h-full w-full object-cover" />
+                  <img
+                    src={getImageUrl(item.image)}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
                 </div>
               </Tooltip>
             ))}
@@ -202,7 +227,9 @@ export default function OrdersPage() {
       key: "payment_status",
       responsive: ["md"],
       render: (_, record) => (
-        <StatusTag tone={paymentStatusToneMap[record.payment_status] ?? "neutral"}>
+        <StatusTag
+          tone={paymentStatusToneMap[record.payment_status] ?? "neutral"}
+        >
           {paymentLabel(record.payment_status)}
         </StatusTag>
       ),
@@ -223,13 +250,14 @@ export default function OrdersPage() {
       width: 108,
       render: (_, record) => (
         <div className="flex items-center justify-end gap-1">
-          <Tooltip title="View order">
-            <Button
-              type="text"
-              className="text-mist-400! hover:bg-violet-600/15! hover:text-violet-glow!"
-              icon={<EyeOutlined />}
-              onClick={() => setViewing(record)}
-            />
+          <Tooltip title="View order details">
+            <Link to={`/store/orders/${record._id}`}>
+              <Button
+                type="text"
+                className="text-mist-400! hover:bg-violet-600/15! hover:text-violet-glow!"
+                icon={<EyeOutlined />}
+              />
+            </Link>
           </Tooltip>
           <Tooltip title="Delete order">
             <Button
@@ -262,20 +290,27 @@ export default function OrdersPage() {
             <ShoppingOutlined className="text-lg text-white" />
           </div>
           <div className="relative">
-            <h2 className="font-display text-xl font-semibold text-cloud-100">Manage orders</h2>
+            <h2 className="font-display text-xl font-semibold text-cloud-100">
+              Manage orders
+            </h2>
             <p className="mt-1 max-w-xl text-sm text-mist-400">
-              Track store purchases, review line items and pricing, and update fulfillment status.
+              Track store purchases, review line items and pricing, and update
+              fulfillment status.
             </p>
           </div>
         </div>
 
         <div className="relative flex flex-wrap gap-2">
           <div className="rounded-2xl border border-warning/25 bg-warning/10 px-4 py-3 text-sm">
-            <div className="font-semibold text-warning">{pendingCount} pending</div>
+            <div className="font-semibold text-warning">
+              {pendingCount} pending
+            </div>
             <div className="text-xs text-mist-400">Awaiting action</div>
           </div>
           <div className="rounded-2xl border border-info/25 bg-info/10 px-4 py-3 text-sm">
-            <div className="font-semibold text-info">{processingCount} processing</div>
+            <div className="font-semibold text-info">
+              {processingCount} processing
+            </div>
             <div className="text-xs text-mist-400">In progress</div>
           </div>
         </div>
@@ -294,7 +329,7 @@ export default function OrdersPage() {
                     <span
                       className={cn(
                         "h-2 w-2 rounded-full",
-                        orderStatusColorMap[tab.key as OrderStatus].dot
+                        orderStatusColorMap[tab.key as OrderStatus].dot,
                       )}
                     />
                   )}
@@ -304,7 +339,8 @@ export default function OrdersPage() {
                     showZero
                     overflowCount={999}
                     style={{
-                      backgroundColor: statusTab === tab.key ? "#8131F0" : "#23274f",
+                      backgroundColor:
+                        statusTab === tab.key ? "#8131F0" : "#23274f",
                       color: statusTab === tab.key ? "#fff" : "#9ca3c9",
                       boxShadow: "none",
                     }}
@@ -335,7 +371,9 @@ export default function OrdersPage() {
           <RangePicker
             className="w-full! sm:col-span-2 xl:col-span-2"
             value={dateRange}
-            onChange={(range) => setDateRange((range as [Dayjs, Dayjs] | null) ?? null)}
+            onChange={(range) =>
+              setDateRange((range as [Dayjs, Dayjs] | null) ?? null)
+            }
             placeholder={["From date", "To date"]}
           />
         </div>
@@ -368,17 +406,6 @@ export default function OrdersPage() {
           />
         )}
       </GlassCard>
-
-      <OrderDetailModal
-        order={viewing}
-        open={!!viewing}
-        updating={isUpdatingStatus}
-        onClose={() => setViewing(null)}
-        onStatusChange={(status) => {
-          if (!viewing) return;
-          applyStatusChange(viewing, status);
-        }}
-      />
 
       <ConfirmDeleteModal
         open={deleteFlow.isOpen}

@@ -1,13 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge, Button, Spin } from "antd";
-import { BellOutlined, CheckOutlined, LoadingOutlined } from "@ant-design/icons";
+import {
+  BellOutlined,
+  CheckOutlined,
+  DeleteOutlined,
+  LoadingOutlined,
+  ArrowRightOutlined,
+} from "@ant-design/icons";
 import { toast } from "sonner";
 import { io, type Socket } from "socket.io-client";
 import {
   useGetNotificationsQuery,
   useReadAllNotificationsMutation,
   useReadNotificationMutation,
+  useDeleteNotificationMutation,
   type NotificationItem,
 } from "@/redux/features/notification/notificationApi";
 import { SOCKET_URL, TOKEN_KEY } from "@/config";
@@ -33,13 +40,11 @@ export function TopbarNotifications({ userId }: TopbarNotificationsProps) {
     refetch: refetchNotifications,
     isFetching,
     isLoading,
-  } = useGetNotificationsQuery(
-    { page, limit: PAGE_SIZE },
-    { skip: !userId }
-  );
+  } = useGetNotificationsQuery({ page, limit: PAGE_SIZE }, { skip: !userId });
 
   const [readNotification] = useReadNotificationMutation();
   const [readAllNotifications] = useReadAllNotificationsMutation();
+  const [deleteNotification] = useDeleteNotificationMutation();
 
   const notifications = notificationRes?.data?.data ?? [];
   const unreadCount = notificationRes?.data?.unreadCount ?? 0;
@@ -77,7 +82,10 @@ export function TopbarNotifications({ userId }: TopbarNotificationsProps) {
     if (!open) return;
 
     const handlePointerDown = (event: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(event.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -109,7 +117,7 @@ export function TopbarNotifications({ userId }: TopbarNotificationsProps) {
           setPage((current) => current + 1);
         }
       },
-      { root, rootMargin: "80px", threshold: 0 }
+      { root, rootMargin: "80px", threshold: 0 },
     );
 
     observer.observe(sentinel);
@@ -119,7 +127,7 @@ export function TopbarNotifications({ userId }: TopbarNotificationsProps) {
   const handleNotificationClick = (notification: NotificationItem) => {
     setOpen(false);
 
-    const targetPath = resolveNotificationPath(notification.path);
+    const targetPath = resolveNotificationPath(notification.path, notification.refId);
     if (targetPath) {
       navigate(targetPath);
     }
@@ -160,7 +168,7 @@ export function TopbarNotifications({ userId }: TopbarNotificationsProps) {
         className={cn(
           "relative flex h-9 w-9 items-center justify-center rounded-full text-mist-400 transition",
           "hover:bg-white/5 hover:text-cloud-100",
-          open && "bg-violet-600/15 text-violet-glow"
+          open && "bg-violet-600/15 text-violet-glow",
         )}
       >
         <Badge
@@ -184,12 +192,16 @@ export function TopbarNotifications({ userId }: TopbarNotificationsProps) {
 
           <div className="relative flex items-start justify-between gap-3 border-b border-navy-700/60 px-4 py-3.5">
             <div>
-              <p className="font-display text-sm font-semibold text-cloud-100">Notifications</p>
+              <p className="font-display text-sm font-semibold text-cloud-100">
+                Notifications
+              </p>
               <p className="mt-0.5 text-xs text-mist-500">
                 {unreadCount > 0
                   ? `${unreadCount} unread`
                   : "You're all caught up"}
-                {pagination?.total != null ? ` · ${pagination.total} total` : ""}
+                {pagination?.total != null
+                  ? ` · ${pagination.total} total`
+                  : ""}
               </p>
             </div>
             <Button
@@ -207,76 +219,127 @@ export function TopbarNotifications({ userId }: TopbarNotificationsProps) {
           <div ref={listRef} className="relative max-h-112 overflow-y-auto">
             {isLoading && notifications.length === 0 ? (
               <div className="flex items-center justify-center py-12">
-                <Spin indicator={<LoadingOutlined className="text-violet-glow" spin />} />
+                <Spin
+                  indicator={
+                    <LoadingOutlined className="text-violet-glow" spin />
+                  }
+                />
               </div>
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center px-4 py-10 text-center">
                 <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-navy-800/80 text-mist-500">
                   <BellOutlined className="text-lg" />
                 </span>
-                <p className="mt-3 text-sm font-medium text-cloud-100">No notifications</p>
-                <p className="mt-1 text-xs text-mist-500">New alerts will show up here.</p>
+                <p className="mt-3 text-sm font-medium text-cloud-100">
+                  No notifications
+                </p>
+                <p className="mt-1 text-xs text-mist-500">
+                  New alerts will show up here.
+                </p>
               </div>
             ) : (
               <>
-                {notifications.map((notification) => {
+                {notifications?.map((notification) => {
                   const unread = !notification.seen;
                   return (
-                    <button
+                    <div
                       key={notification._id}
-                      type="button"
                       onClick={() => handleNotificationClick(notification)}
                       className={cn(
-                        "block w-full border-b border-navy-700/50 px-4 py-3.5 text-left transition last:border-b-0",
-                        unread ? "bg-violet-600/8 hover:bg-violet-600/14" : "hover:bg-white/3"
+                        "group relative flex cursor-pointer items-start gap-3 border-b border-navy-700/50 px-4 py-3.5 text-left transition last:border-b-0",
+                        unread
+                          ? "bg-violet-600/8 hover:bg-violet-600/14"
+                          : "hover:bg-white/3",
                       )}
                     >
-                      <div className="flex items-start gap-3">
-                        <span
-                          className={cn(
-                            "mt-1.5 h-2 w-2 shrink-0 rounded-full",
-                            unread
-                              ? "bg-violet-glow shadow-[0_0_8px_rgba(157,92,245,0.65)]"
-                              : "bg-navy-600"
-                          )}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-2">
-                            <p
-                              className={cn(
-                                "text-sm leading-snug",
-                                unread
-                                  ? "font-semibold text-cloud-100"
-                                  : "font-medium text-mist-300"
-                              )}
-                            >
-                              {notification.title}
-                            </p>
-                            <span className="shrink-0 text-[10px] text-mist-600">
+                      <span
+                        className={cn(
+                          "mt-1.5 h-2 w-2 shrink-0 rounded-full",
+                          unread
+                            ? "bg-violet-glow shadow-[0_0_8px_rgba(157,92,245,0.65)]"
+                            : "bg-navy-600",
+                        )}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <p
+                            className={cn(
+                              "text-sm leading-snug",
+                              unread
+                                ? "font-semibold text-cloud-100"
+                                : "font-medium text-mist-300",
+                            )}
+                          >
+                            {notification.title}
+                          </p>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="text-[10px] text-mist-600">
                               {formatDateTime(notification.createdAt)}
                             </span>
+                            <button
+                              type="button"
+                              title="Delete notification"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toast.promise(
+                                  deleteNotification(notification._id).unwrap(),
+                                  {
+                                    loading: "Deleting…",
+                                    success: "Notification deleted",
+                                    error: "Failed to delete notification",
+                                  },
+                                );
+                              }}
+                              className="rounded p-0.5 text-mist-600 opacity-0 transition hover:bg-danger/15 hover:text-danger group-hover:opacity-100"
+                            >
+                              <DeleteOutlined className="text-xs" />
+                            </button>
                           </div>
-                          {notification.message && (
-                            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-mist-400">
-                              {notification.message}
-                            </p>
-                          )}
                         </div>
+                        {notification.message && (
+                          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-mist-400">
+                            {notification.message}
+                          </p>
+                        )}
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
 
-                <div ref={sentinelRef} className="flex h-10 items-center justify-center">
+                <div
+                  ref={sentinelRef}
+                  className="flex h-10 items-center justify-center"
+                >
                   {isFetching && hasMore && (
-                    <Spin size="small" indicator={<LoadingOutlined className="text-violet-glow" spin />} />
+                    <Spin
+                      size="small"
+                      indicator={
+                        <LoadingOutlined className="text-violet-glow" spin />
+                      }
+                    />
                   )}
                   {!hasMore && notifications.length > 0 && (
-                    <span className="text-[11px] text-mist-600">End of notifications</span>
+                    <span className="text-[11px] text-mist-600">
+                      End of notifications
+                    </span>
                   )}
                 </div>
               </>
             )}
+          </div>
+
+          <div className="relative border-t border-navy-700/60 bg-navy-900/60 p-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                navigate("/notifications");
+              }}
+              className="flex w-full items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold text-violet-glow transition hover:bg-violet-600/15"
+            >
+              <span>View all notifications</span>
+              <ArrowRightOutlined className="text-[10px]" />
+            </button>
           </div>
         </div>
       )}

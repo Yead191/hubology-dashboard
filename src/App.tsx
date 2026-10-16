@@ -17,6 +17,8 @@ const ServicesPage = lazy(() => import("@/features/services/ServicesPage"));
 const ServiceBookingsPage = lazy(() => import("@/features/services/ServiceBookingsPage"));
 const VendorsPage = lazy(() => import("@/features/vendors/VendorsPage"));
 const UsersPage = lazy(() => import("@/features/users/UsersPage"));
+const UserDetailPage = lazy(() => import("@/features/users/UserDetailPage"));
+const OrderDetailPage = lazy(() => import("@/features/orders/OrderDetailPage"));
 const StorePage = lazy(() => import("@/features/store/StorePage"));
 const CouponsPage = lazy(() => import("@/features/coupons/CouponsPage"));
 const RefundsPage = lazy(() => import("@/features/refunds/RefundsPage"));
@@ -33,6 +35,7 @@ const EventDetailPage = lazy(() => import("@/features/events/EventDetailPage"));
 const PartnersPage = lazy(() => import("@/features/partners/PartnersPage"));
 const PartnerDetailPage = lazy(() => import("@/features/partners/PartnerDetailPage"));
 const InquiriesPage = lazy(() => import("@/features/inquiries/InquiriesPage"));
+const NotificationsPage = lazy(() => import("@/features/notifications/NotificationsPage"));
 const DisclaimerEditorPage = lazy(() => import("@/features/disclaimer/DisclaimerEditorPage"));
 const IFundAyitiOverviewPage = lazy(() => import("@/features/ifundayiti/IFundAyitiOverviewPage"));
 const IFundAyitiApplicationsPage = lazy(() => import("@/features/ifundayiti/ApplicationsPage"));
@@ -55,11 +58,20 @@ export default function App() {
             <Route path="services/bookings" element={<ServiceBookingsPage />} />
             <Route path="vendors" element={<VendorsPage />} />
             <Route path="users" element={<UsersPage />} />
+            <Route path="users/:userId" element={<UserDetailPage />} />
+            <Route path="user/:userId" element={<UserDetailPage />} />
             <Route path="store" element={<StorePage />} />
             <Route path="store/orders" element={<OrdersPage />} />
+            <Route path="store/orders/:orderId" element={<OrderDetailPage />} />
+            <Route path="orders" element={<Navigate to="/store/orders" replace />} />
+            <Route path="orders/:orderId" element={<OrderDetailPage />} />
             <Route path="store/coupons" element={<CouponsPage />} />
+            <Route path="coupons" element={<Navigate to="/store/coupons" replace />} />
             <Route path="store/refunds" element={<RefundsPage />} />
             <Route path="store/refunds/:refundId" element={<RefundDetailPage />} />
+            <Route path="refunds" element={<Navigate to="/store/refunds" replace />} />
+            <Route path="refunds/:refundId" element={<RefundDetailPage />} />
+            <Route path="bookings" element={<Navigate to="/services/bookings" replace />} />
             <Route path="membership" element={<MembershipPage />} />
             <Route path="membership/faq" element={<MembershipFaqPage />} />
             <Route path="membership/:membershipId/subscribers" element={<MembershipSubscribersPage />} />
@@ -72,6 +84,7 @@ export default function App() {
             <Route path="partners" element={<PartnersPage />} />
             <Route path="partners/:partnerId" element={<PartnerDetailPage />} />
             <Route path="inquiries" element={<InquiriesPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="disclaimer/:type" element={<DisclaimerEditorPage />} />
             <Route path="ifundayiti" element={<IFundAyitiOverviewPage />} />

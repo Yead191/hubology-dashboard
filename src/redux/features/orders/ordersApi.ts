@@ -2,6 +2,7 @@ import { baseApi } from "../../api/baseApi";
 import type {
   GetOrdersParams,
   OrderMutationResponse,
+  OrderSingleResponse,
   OrderStatus,
   OrdersListResponse,
 } from "./orders.types";
@@ -9,19 +10,22 @@ import type {
 export const ordersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getOrders: builder.query<OrdersListResponse, GetOrdersParams | void>({
-      query: (params) => ({
-        url: "/order",
-        method: "GET",
-        params: {
-          page: params?.page ?? 1,
-          limit: params?.limit ?? 10,
-          searchTerm: params?.searchTerm ?? "",
-          ...(params?.status ? { status: params.status } : {}),
-          ...(params?.payment_status ? { payment_status: params.payment_status } : {}),
-          ...(params?.startDate ? { startDate: params.startDate } : {}),
-          ...(params?.endDate ? { endDate: params.endDate } : {}),
-        },
-      }),
+      query: (arg) => {
+        const params = (arg || {}) as GetOrdersParams;
+        return {
+          url: "/order",
+          method: "GET",
+          params: {
+            page: params.page ?? 1,
+            limit: params.limit ?? 10,
+            searchTerm: params.searchTerm ?? "",
+            ...(params.status ? { status: params.status } : {}),
+            ...(params.payment_status ? { payment_status: params.payment_status } : {}),
+            ...(params.startDate ? { startDate: params.startDate } : {}),
+            ...(params.endDate ? { endDate: params.endDate } : {}),
+          },
+        };
+      },
       providesTags: (result) =>
         result?.data
           ? [
@@ -29,6 +33,14 @@ export const ordersApi = baseApi.injectEndpoints({
               { type: "Orders", id: "LIST" },
             ]
           : [{ type: "Orders", id: "LIST" }],
+    }),
+
+    getOrderById: builder.query<OrderSingleResponse, string>({
+      query: (id) => ({
+        url: `/order/${id}`,
+        method: "GET",
+      }),
+      providesTags: (_result, _err, id) => [{ type: "Orders", id }],
     }),
 
     updateOrderStatus: builder.mutation<
@@ -60,6 +72,7 @@ export const ordersApi = baseApi.injectEndpoints({
 
 export const {
   useGetOrdersQuery,
+  useGetOrderByIdQuery,
   useUpdateOrderStatusMutation,
   useDeleteOrderMutation,
 } = ordersApi;

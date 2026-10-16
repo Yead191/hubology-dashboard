@@ -18,6 +18,7 @@ import {
   RollbackOutlined,
   CalendarOutlined,
   ApartmentOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
 import type { ComponentType } from "react";
 import { DISCLAIMER_PAGES } from "@/features/disclaimer/disclaimerConfig";
@@ -167,6 +168,12 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Inquiries",
     path: "/inquiries",
     icon: FormOutlined,
+  },
+  {
+    key: "notifications",
+    label: "Notifications",
+    path: "/notifications",
+    icon: BellOutlined,
   },
   {
     key: "disclaimer",

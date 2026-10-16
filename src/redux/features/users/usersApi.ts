@@ -3,23 +3,27 @@ import type {
   ChangeUserStatusPayload,
   GetUsersParams,
   UserMutationResponse,
+  UserSingleResponse,
   UsersListResponse,
 } from "./users.types";
 
 export const usersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getUsers: builder.query<UsersListResponse, GetUsersParams | void>({
-      query: (params) => ({
-        url: "/user",
-        method: "GET",
-        params: {
-          page: params?.page ?? 1,
-          limit: params?.limit ?? 10,
-          searchTerm: params?.searchTerm ?? "",
-          ...(params?.status ? { status: params.status } : {}),
-          ...(params?.hasSubscription ? { hasSubscription: true } : {}),
-        },
-      }),
+      query: (arg) => {
+        const params = (arg || {}) as GetUsersParams;
+        return {
+          url: "/user",
+          method: "GET",
+          params: {
+            page: params.page ?? 1,
+            limit: params.limit ?? 10,
+            searchTerm: params.searchTerm ?? "",
+            ...(params.status ? { status: params.status } : {}),
+            ...(params.hasSubscription ? { hasSubscription: true } : {}),
+          },
+        };
+      },
       providesTags: (result) =>
         result?.data
           ? [
@@ -27,6 +31,14 @@ export const usersApi = baseApi.injectEndpoints({
               { type: "Users", id: "LIST" },
             ]
           : [{ type: "Users", id: "LIST" }],
+    }),
+
+    getUserById: builder.query<UserSingleResponse, string>({
+      query: (id) => ({
+        url: `/user/${id}`,
+        method: "GET",
+      }),
+      providesTags: (_result, _err, id) => [{ type: "Users", id }],
     }),
 
     changeUserStatus: builder.mutation<
@@ -58,6 +70,7 @@ export const usersApi = baseApi.injectEndpoints({
 
 export const {
   useGetUsersQuery,
+  useGetUserByIdQuery,
   useChangeUserStatusMutation,
   useDeleteUserMutation,
 } = usersApi;

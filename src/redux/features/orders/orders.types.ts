@@ -28,6 +28,28 @@ export interface OrderPriceBreakdown {
   subtotal: number;
 }
 
+export interface OrderAddressBreakdown {
+  street_address?: string;
+  city?: string;
+  postal_code?: string;
+  country?: string;
+  contact_number?: string;
+  [key: string]: unknown;
+}
+
+export interface OrderRefundSummary {
+  _id?: string;
+  refundAmount?: number;
+  refundType?: string;
+  status?: string;
+  stripeRefundId?: string;
+  adminNote?: string;
+  reason?: string;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface ApiOrder {
   _id: string;
   user: OrderUser;
@@ -35,12 +57,25 @@ export interface ApiOrder {
   status: OrderStatus;
   payment_status: OrderPaymentStatus;
   payment_intent_id?: string | null;
+  transaction_id?: string | null;
   contact_number?: string | null;
   formatted_address?: string | null;
+  address_breakdown?: OrderAddressBreakdown;
+  coupon?: string | null;
+  total_items?: number;
+  discount_percentage?: number;
+  discount_amount?: number;
   order_id: string;
   price_breakdown: OrderPriceBreakdown;
+  refund?: OrderRefundSummary | null;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface OrderSingleResponse {
+  success: boolean;
+  message: string;
+  data: ApiOrder;
 }
 
 export interface PaginationMeta {

@@ -72,7 +72,9 @@ export function Topbar({
           {title}
         </h1>
         {subtitle && (
-          <p className="hidden truncate text-xs text-mist-400 sm:block">{subtitle}</p>
+          <p className="hidden truncate text-xs text-mist-400 sm:block">
+            {subtitle}
+          </p>
         )}
       </div>
 
@@ -86,10 +88,23 @@ export function Topbar({
 
       <TopbarNotifications userId={user?._id} />
 
-      <Dropdown menu={{ items: userMenuItems }} trigger={["click"]} placement="bottomRight">
-        <button type="button" className="flex items-center gap-2 rounded-full pl-1 pr-2 hover:bg-white/5">
-          <Avatar src={getImageUrl(user?.image)} icon={<UserOutlined />} size={32} />
-          <span className="hidden text-sm font-medium text-cloud-100 sm:inline">{user?.name}</span>
+      <Dropdown
+        menu={{ items: userMenuItems }}
+        trigger={["click"]}
+        placement="bottomRight"
+      >
+        <button
+          type="button"
+          className="flex items-center gap-2 rounded-full pl-1 pr-2 hover:bg-white/5"
+        >
+          <Avatar
+            src={getImageUrl(user?.image)}
+            icon={<UserOutlined />}
+            size={32}
+          />
+          <span className="hidden text-sm font-medium text-cloud-100 sm:inline">
+            {user?.name}
+          </span>
         </button>
       </Dropdown>
     </div>

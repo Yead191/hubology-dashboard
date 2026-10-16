@@ -12,6 +12,7 @@ const PAGE_META: { match: (path: string) => boolean; title: string; subtitle?: s
   { match: (p) => p === "/services/bookings", title: "Service bookings", subtitle: "Track and manage user bookings across all services" },
   { match: (p) => p === "/vendors", title: "Vendors", subtitle: "Review applications and manage vendor accounts" },
   { match: (p) => p === "/users", title: "Users", subtitle: "View member accounts and manage access status" },
+  { match: (p) => p.startsWith("/store/orders/"), title: "Order details", subtitle: "Inspect purchased items, customer, delivery, and payment breakdown" },
   { match: (p) => p === "/store/orders", title: "Manage orders", subtitle: "Track purchases and update fulfillment status" },
   { match: (p) => p.startsWith("/store/refunds/"), title: "Refund review", subtitle: "Inspect the request, evidence, and issue a decision" },
   { match: (p) => p === "/store/refunds", title: "Refund requests", subtitle: "Review and action customer refund requests" },
@@ -29,6 +30,7 @@ const PAGE_META: { match: (path: string) => boolean; title: string; subtitle?: s
   { match: (p) => p.startsWith("/partners/"), title: "Partner profile", subtitle: "Review application details and manage partner status" },
   { match: (p) => p === "/partners", title: "Partners", subtitle: "Review applications and manage the Hubology partner network" },
   { match: (p) => p === "/inquiries", title: "Website inquiries", subtitle: "Track and manage project leads from the Hubology site" },
+  { match: (p) => p === "/notifications", title: "Notifications", subtitle: "Stay updated with real-time platform alerts, updates, and history" },
   { match: (p) => p === "/profile", title: "Your profile", subtitle: "Update your name, photo, and account password" },
   ...DISCLAIMER_PAGES.map((page) => ({
     match: (p: string) => p === page.path,
